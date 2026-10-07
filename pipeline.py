@@ -266,6 +266,8 @@ def cmd_new(a):
     }
     dest.mkdir(parents=True)
     for src in TEMPLATE.iterdir():
+        if not src.is_file():                   # e.g. __pycache__ left by compileall
+            continue
         target = dest / src.name.replace('shot.py', f'{snake}.py')
         text = src.read_text(encoding='utf-8')
         for k, v in values.items():
