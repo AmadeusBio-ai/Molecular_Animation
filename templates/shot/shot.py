@@ -63,7 +63,7 @@ CAMERA = [
     (0.62, 'focus', 40, -2, 5, 50),
     (1.0, 'focus', 36, 10, 6, 50),
 ]
-ORBIT = {'distance': ('fit', 0.8), 'elevation': 10, 'lens': 50, 'azimuth0': -20, 'turns': 1.0}   # LOOP = True
+ORBIT = {'distance': ('fit', 0.95), 'elevation': 10, 'lens': 50, 'azimuth0': -20, 'turns': 1.0}   # LOOP = True
 APERTURE_RATIO = 0.016           # aperture radius / focus distance: shallow, but the highlight stays sharp
 
 # Look (sRGB 0-255): muted chains, one warm accent on the highlight, element colours only where it matters.
