@@ -135,6 +135,7 @@ Keep `shots.json` in step with the script: fps, count, render range, label pass,
    It then copies the poster frames from the take.
 2. Decode a few frames from the delivered MP4 and look at them: the composite, the labels and the colour.
 3. For web loops, choose CRFs per shot. Compare decoded frames with the PNGs, in crops and by PSNR, and balance file size. Record the choice in `shots.json`.
+4. To play a film in a GitHub README, upload it as an attachment. GitHub strips `<video>` tags, and its content security policy blocks video served from the repository or a release. Only a file dropped into an issue or pull-request comment box plays: it becomes a `https://github.com/user-attachments/assets/...` URL, which renders as a player on a line of its own. Uploads are limited to 10 MB on free plans, so encode a lighter H.264 MP4 from the take and check it by PSNR against the PNGs (the case study's README clip is recorded in its `record.md`).
 
 ## 9. Record
 

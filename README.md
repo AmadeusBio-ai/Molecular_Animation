@@ -11,11 +11,9 @@
 
 It is designed to be driven by an AI agent (Claude Code through Blender MCP) and works just as well by hand.
 
-| | | |
-| --- | --- | --- |
-| ![Channelrhodopsin, membrane](docs/media/channelrhodopsin-wide.jpg) | ![Channelrhodopsin, retinal twist](docs/media/channelrhodopsin-retinal.jpg) | ![Channelrhodopsin, open pathway](docs/media/channelrhodopsin-channel.jpg) |
+https://github.com/user-attachments/assets/3e74cbad-caa4-4fd7-9cd3-a1a217ec0104
 
-*Case study: [channelrhodopsin](examples/channelrhodopsin/), from a brief on the 2026 Nobel Prize in Physiology or Medicine. A photon twists retinal, the protein responds, and a cation pathway opens. 21 s, built from PDB 9GO1/9GO2.*
+*Case study: [channelrhodopsin](examples/channelrhodopsin/), from a brief on the 2026 Nobel Prize in Physiology or Medicine. A photon twists retinal, the protein responds, and a cation pathway opens. 21 s, built from PDB 9GO1/9GO2. Full-quality labelled and clean films are in the [v0.1.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.1.0).*
 
 ## What's inside
 

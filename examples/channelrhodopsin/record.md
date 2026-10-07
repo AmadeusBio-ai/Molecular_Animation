@@ -65,6 +65,13 @@ The delivered take-02 is take-01 frames 1-395 plus a re-render of 396-504 (`--fr
   | `channelrhodopsin-clean.webm` | VP9 | 504 | 21.0 s | 8.9 MB |
 
   All are 1920×1080 at 24 fps. Posters (clean): `-poster-wide.png` (frame 70), `-poster-retinal.png` (204, mid-twist), `-poster-channel.png` (470).
+- **README clip** (2026-10-07). `channelrhodopsin-readme.mp4` is the labelled film re-encoded from take-02 and labels-03 to fit GitHub's 10 MB attachment limit: H.264 High, CRF 21, preset `veryslow`, faststart, 504 frames, 21.0 s, 9.06 MB. Against the PNG composite its PSNR is 46.5 dB mean and 44.0 dB minimum over all frames, and decoded frame 204 was inspected. It is uploaded to GitHub as an attachment and embedded in the top-level README; it is not part of the release zip.
+
+  ```
+  ffmpeg -framerate 24 -i renders/channelrhodopsin/take-02/%04d.png -framerate 24 -i renders/channelrhodopsin/labels-03/%04d.png \
+    -filter_complex "[0:v][1:v]overlay=format=auto[v]" -map "[v]" -frames:v 504 \
+    -c:v libx264 -preset veryslow -crf 21 -pix_fmt yuv420p -movflags +faststart -an delivery/channelrhodopsin/channelrhodopsin-readme.mp4
+  ```
 - **Render cost.** Cycles, OptiX on the RTX 5060 Ti, 128 samples, adaptive 0.02, denoised: about 19 s per frame at 1920×1080, 2.7 h for 504 frames. The label pass takes about 5 min.
 - **Framework refactor (2026-10-07).** The general code moved from the shot into `molanim/`, and the C1C2 specifics into `c1c2.py`. The rebuilt scene was checked against the delivered film:
   - every RESULT number (morph, pathway profile, sites, ion gaps, lipid counts, camera points) equals the original build;
