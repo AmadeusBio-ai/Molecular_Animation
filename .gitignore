@@ -1,0 +1,23 @@
+# Build products and large media: rebuilt from scripts, or (for the case study) fetched from the GitHub
+# release with `python pipeline.py fetch <shot>`.
+renders/
+delivery/
+*.blend
+*.blend1
+*.blend@
+
+# Reference clips and images are local working material: keep them out of git unless you hold the rights.
+references/*
+!references/README.md
+
+# Python and OS clutter
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local Claude Code settings
+.claude/settings.local.json

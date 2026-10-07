@@ -1,0 +1,25 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -r requirements.txt pytest
+      - name: Byte-compile every script (Blender scripts included; they are not imported)
+        run: python -m compileall -q molanim tools examples templates tests pipeline.py
+      - name: Framework and case-study science (no Blender needed)
+        run: python -m pytest tests -q
+      - name: Structure checksums
+        run: cd assets/pdb && sha256sum -c SHA256SUMS

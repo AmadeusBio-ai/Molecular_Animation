@@ -1,0 +1,4 @@
+# For pipeline.py (contact sheets, motion statistics). Blender bundles its own Python and numpy for the shot scripts;
+# tools/encode.py needs only the standard library plus ffmpeg/ffprobe on PATH.
+numpy>=1.26
+Pillow>=10

@@ -1,0 +1,21 @@
+{
+  "_about": "How this project's films are made; read by pipeline.py. Paths are relative to this folder, except 'delivery' (relative to the repo root). 'take' is the delivered take under renders/<shot>/.",
+  "shots": {
+    "channelrhodopsin": {
+      "title": "Channelrhodopsin: the twist that opens a pathway",
+      "brief": "brief.md",
+      "record": "record.md",
+      "script": "channelrhodopsin.py",
+      "blend": "channelrhodopsin.blend",
+      "fps": 24, "count": 504, "loop": false, "render": "1-504",
+      "take": "take-02",
+      "overlay": {"blend": "channelrhodopsin-labels.blend", "take": "labels-03"},
+      "delivery": "delivery/channelrhodopsin",
+      "outputs": [{"name": "channelrhodopsin", "overlay": true}, {"name": "channelrhodopsin-clean"}],
+      "crf": [16, 24],
+      "posters": {"channelrhodopsin-poster-wide.png": 70, "channelrhodopsin-poster-retinal.png": 204,
+                  "channelrhodopsin-poster-channel.png": 470},
+      "release": {"tag": "v0.1.0", "asset": "channelrhodopsin-delivery.zip"}
+    }
+  }
+}

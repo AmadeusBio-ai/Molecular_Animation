@@ -1,0 +1,19 @@
+{
+  "_about": "How this project's films are made; read by pipeline.py. Paths are relative to this folder, except 'delivery' (relative to the repo root). Set 'take' to the take you deliver; tune 'crf' and 'posters' before delivering.",
+  "shots": {
+    "__NAME__": {
+      "title": "__TITLE__",
+      "brief": "brief.md",
+      "record": "record.md",
+      "script": "__SCRIPT__.py",
+      "blend": "__NAME__.blend",
+      "fps": __FPS__, "count": __FRAMES__, "loop": __LOOPJSON__, "render": "__RENDER__",
+      "take": "take-01",
+      "overlay": {"blend": "__NAME__-labels.blend", "take": "labels-01"},
+      "delivery": "delivery/__NAME__",
+      "outputs": [{"name": "__NAME__", "overlay": true}, {"name": "__NAME__-clean"}],
+      "crf": [16, 24],
+      "posters": {"__NAME__-poster.png": 1}
+    }
+  }
+}
