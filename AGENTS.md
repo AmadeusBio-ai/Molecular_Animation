@@ -6,6 +6,7 @@ Read before starting a film:
 - `docs/workflow.md`: how a brief becomes a delivered film.
 - `docs/principles.md`: what makes these films good and honest.
 - `docs/framework.md`: the `molanim` API and the pipeline tools.
+- `docs/motion.md`: how molecules move, with rates and sources, and how the films show it.
 - `examples/channelrhodopsin/`: the worked case study, from brief to delivered film.
 
 Setup is in `docs/setup.md`.
@@ -39,7 +40,7 @@ Setup is in `docs/setup.md`.
    - A labelled and a clean version of science films.
 3. Fetch any further structures with `python pipeline.py pdb <IDs>`. Inspect their chains, alt-locs, assemblies and ligands, and verify the facts you will animate.
 4. Make the script yours, using `molanim` and the case study as needed. Then run `python pipeline.py build <name>` and read `RESULT`.
-5. Do look-dev on stills (`pipeline.py still`) and view them. Then render a preview (`pipeline.py preview`) and review its contact sheet and `pipeline.py motion`.
+5. Do look-dev on stills (`pipeline.py still`) and view them. Then render a preview (`pipeline.py preview`) and review its contact sheet and `pipeline.py motion`, and check the busiest moves on consecutive frames (`preview --frames A-B --step 1`).
 6. Render the final take and the label pass (`pipeline.py render`), then run `pipeline.py deliver <name>`.
 7. Complete `record.md`: the status, numbers, evidence per beat, checks with their method, and known limits.
 
@@ -47,7 +48,7 @@ Setup is in `docs/setup.md`.
 
 | Path | Contents |
 | --- | --- |
-| `molanim/` | The framework. Pure-numpy science (`structure`, `morph`, `pathway`, `membrane`, `particles`, `timeline`, `color`) and Blender helpers (`molanim.blender`: `scene`, `nodes`, `groups`, `mesh`, `look`, `rig`, `labels`) |
+| `molanim/` | The framework. Pure-numpy science (`structure`, `morph`, `pathway`, `membrane`, `dynamics`, `particles`, `timeline`, `color`) and Blender helpers (`molanim.blender`: `scene`, `nodes`, `groups`, `mesh`, `look`, `rig`, `labels`) |
 | `examples/<name>/` | Finished case studies: `brief.md`, `sources/`, the shot script, project science, `shots.json`, `record.md` |
 | `projects/<name>/` | Your films, scaffolded by `pipeline.py new` |
 | `templates/shot/` | The scaffold copied by `pipeline.py new` |
@@ -69,7 +70,7 @@ Setup is in `docs/setup.md`.
 | Fetch structures | `python pipeline.py pdb <IDs>` |
 | Build a scene headless | `python pipeline.py build <shot>` (RESULT saved to `renders/<shot>/build-result.json`) |
 | Still for look-dev | `python pipeline.py still <shot> <frame> [--percent 50] [--samples N] [--overlay]` |
-| Preview sequence | `python pipeline.py preview <shot> [--step 4 --percent 25 --samples 16]` (writes a contact sheet) |
+| Preview sequence | `python pipeline.py preview <shot> [--frames A-B] [--step 4 --percent 25 --samples 16]` (writes a contact sheet) |
 | Final take | `python pipeline.py render <shot> --take take-NN [--frames A-B]` (resumable; `--overlay --take labels-NN` for labels) |
 | Inspect a sequence | `python pipeline.py sheet <dir>`, `python pipeline.py motion <dir> [--loop N]` |
 | Encode and verify | `python pipeline.py deliver <shot>` |

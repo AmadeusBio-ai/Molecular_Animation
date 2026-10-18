@@ -3,6 +3,7 @@ import math
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from molanim import dynamics as D
 from molanim import structure as St
@@ -128,3 +129,45 @@ def test_wlc_bands_scale_as_the_theory():
     assert abs(r2 / r1 - 2 ** 1.5) < 1e-9 and 11 < t2 / t1 < 16     # amplitude ~ lambda^1.5, time ~ lambda^4 / log
     rms, tau = D.wlc_twist(340.0)                                   # 100 bp: a few ns (Barkley-Zimm)
     assert 0.3 < rms < 0.7 and 1.0 < tau < 10.0
+
+
+def test_periodic_ou_loops_seamlessly():
+    rng = np.random.default_rng(6)
+    t, e = D.clock(480, 0.05)                                      # a 24 ns loop
+    x = D.ou(rng, t, e * 0.2, (2000,), sigma=1.5, tau=1.0, period=24.0)
+    assert abs(x.std() / 1.5 - 1) < 0.05
+    rho = (x * np.roll(x, -20, axis=0)).mean() / x.var()          # 1 ns = tau: correlation 1/e
+    assert abs(rho - math.exp(-1)) < 0.05
+    step, seam = np.abs(np.diff(x, axis=0)).mean(), np.abs(x[0] - x[-1]).mean()
+    assert abs(seam / step - 1) < 0.1                              # the seam is an ordinary step
+    for shutter in ('box', 'triangle'):
+        shown = D.ou(rng, t, e * 16, (2000,), 1.0, 2.0, shutter=shutter, period=24.0)
+        assert abs(shown.std() / D.exposure_factor(2.0, 0.8, shutter) - 1) < 0.08
+    with pytest.raises(ValueError):                                # a held clock cannot loop
+        D.ou(rng, *D.clock(480, 0.05, holds=[(100, 200, 0.0, 6)]), (3,), 1.0, 1.0, period=24.0)
+
+
+def test_protein_motion_moves_a_protein_as_a_protein():
+    t, _ = St.read_mmcif(ROOT / 'assets' / 'pdb' / '9GO1.cif')
+    t = St.select(t, t['chain'] == t['chain'][0])
+    X = t['xyz']
+    times, rate = D.clock(96, 1.0 / 24)
+    m = D.protein_motion(np.random.default_rng(8), X, t['resn'], t['resi'], t['name'], t['chain'], times, rate * 2)
+    ret, lys = t['resn'] == 'RET', t['resi'] == 296
+    assert m['report']['bonded_riders'] == [f"{t['chain'][0]}:{t['resi'][ret][0]}:RET - {t['chain'][0]}:296:LYS"]
+    assert np.allclose(m['shapes'][ret], m['shapes'][lys][0]) and np.allclose(m['shapes'][lys], m['shapes'][lys][0])
+    assert m['topo']['chi1_w'][ret | lys].max() == 0 and m['report']['turning_residues'] > 200
+    edges = St.bonds(t)
+    length = lambda P: np.linalg.norm(P[edges[:, 0]] - P[edges[:, 1]], axis=1)   # noqa: E731
+    strain = np.array([np.abs(length(X + D.displacement(m, X, f)) - length(X)) for f in range(0, 96, 8)])
+    assert np.percentile(strain, 99) < 0.25 and strain.max() < 1.2   # turns are exact; modes keep bonds to 1st order
+    nz, c15 = np.nonzero(lys & (t['name'] == 'NZ'))[0][0], np.nonzero(ret & (t['name'] == 'C15'))[0][0]
+    d = [np.linalg.norm((X + D.displacement(m, X, f))[nz] - (X + D.displacement(m, X, f))[c15]) for f in range(0, 96, 8)]
+    assert np.ptp(d) < 1e-9                                        # the Schiff base moves as one
+    loop = D.protein_motion(np.random.default_rng(8), X, t['resn'], t['resi'], t['name'], t['chain'], times, rate * 2,
+                            period=4.0, max_nodes=100)
+    assert loop['report']['stride'] == 3 and loop['report']['modes'] == 30 and np.isfinite(loop['q']).all()
+    step = [np.linalg.norm(D.displacement(loop, X, b) - D.displacement(loop, X, a), axis=1).mean() for a, b in
+            ((k, k + 1) for k in range(95))]
+    seam = np.linalg.norm(D.displacement(loop, X, 0) - D.displacement(loop, X, 95), axis=1).mean()
+    assert seam < 2 * np.median(step)

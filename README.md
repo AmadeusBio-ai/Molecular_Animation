@@ -46,7 +46,7 @@ python pipeline.py still gfp 165 --percent 50  # look at it
 
 <img src="docs/media/template-gfp.jpg" width="640" alt="Template output for PDB 1EMA: the GFP chromophore in a cutaway, labelled">
 
-*What the template produces, untouched, for 1EMA. It dives through a cutaway to the largest ligand (here the chromophore CRO66), shows its pocket as ball-and-stick, and labels the experimental method with "motion illustrative". Use `--loop` for a seamless orbit instead.*
+*What the template produces, untouched, for 1EMA. It dives through a cutaway to the largest ligand (here the chromophore CRO66), shows its pocket as ball-and-stick, and labels the experimental method with "motion illustrative" and the clock. The protein moves in normal modes and its side chains turn about their bonds, at literature rates (1 s of film = 1 ns). Use `--loop` for a seamless orbit instead.*
 
 From there, edit the storyboard constants at the top of `projects/gfp/gfp.py`, add what the brief needs from `molanim`, and follow the [workflow](docs/workflow.md) through preview, final render and delivery.
 

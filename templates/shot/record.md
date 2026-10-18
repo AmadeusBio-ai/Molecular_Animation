@@ -32,7 +32,7 @@ python pipeline.py deliver __NAME__
 
 - **Build:** the `RESULT` numbers, and idempotency (no `.001` duplicates).
 - **Stills and preview:** the frames viewed, and the contact sheet.
-- **Motion:** `pipeline.py motion` (steps above 2× their local median); the seam for loops.
+- **Motion:** the clock and the `RESULT` motion numbers (RMSF, bond strain); `pipeline.py motion` (steps above 2× their local median) on the preview and on a consecutive run of the busiest moves; the seam for loops.
 - **Delivery:** codec, frames, duration and size per file (from `encode.py`).
 - **Review method:** frames, statistics, decoded deliverables. Say whether the film was watched as playback.
 

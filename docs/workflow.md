@@ -86,13 +86,14 @@ Keep `shots.json` in step with the script: fps, count, render range, label pass,
 
 ## 4. Build
 
-1. Extend the script with what the brief needs from `molanim`: morphs between states, pathways, membranes, particles, more structures. The case study shows each of these in use. Keep the housekeeping: scene reset by prefix, save only the scene, `RESULT`.
+1. Extend the script with what the brief needs from `molanim`: morphs between states, pathways, membranes, particles, more structures. The case study shows each of these in use. Thermal and Brownian motion follow `docs/motion.md`: choose the film's clock, then move each molecule as a molecule at its rates (the template already does this for one protein). Keep the housekeeping: scene reset by prefix, save only the scene, `RESULT`.
 2. Build headless with `python pipeline.py build <name>`. Or, in the open Blender, run `runpy.run_path(...)` through MCP.
 3. Make `RESULT` carry the checks:
    - counts;
    - the measured dihedrals and distances at the key frames;
    - the worst morph deviation;
    - the minimum clearances;
+   - the motion: clock, RMSF, the worst bond strain (`dynamics.displacement` gives every atom on every frame);
    - loop seam errors.
 
    Read it every time you build.
@@ -116,7 +117,8 @@ Keep `shots.json` in step with the script: fps, count, render range, label pass,
 2. Check the timing on the contact sheet: beat order, holds, camera moves, label timing.
 3. Evaluate motion numerically in Blender at specific frames: transforms, shape-key values, dihedrals over time, clearances.
 4. `python pipeline.py motion <dir>` lists steps more than 2× their local median, which are jumps and pops. For loops, add `--loop N` to check the seam. Noise in low-sample previews inflates motion, so judge final motion on clean renders.
-5. Iterate until the preview is right. Re-rendering a preview costs minutes; re-rendering a take costs hours.
+5. A preview of every 4th frame cannot show a jerk at the scale of one frame (`motion` says so). Render a consecutive run of the busiest moves, such as a tumbling molecule in close-up, with `python pipeline.py preview <name> --frames A-B --step 1 --percent 50`, and run `motion` on it. ART's take-02 was rejected for a lurch that only consecutive frames showed.
+6. Iterate until the preview is right. Re-rendering a preview costs minutes; re-rendering a take costs hours.
 
 ## 7. Render the take
 

@@ -10,7 +10,9 @@ blend, fps, frame count, delivered take, encode settings, posters). Shot names a
     python pipeline.py pdb 9GO1 9GO2                  download mmCIF files from RCSB into assets/pdb (+ checksums)
     python pipeline.py build <shot>|all               run the shot script headless, print and save its RESULT
     python pipeline.py still <shot> <frame> [--percent 50] [--samples N] [--out PATH] [--overlay]
-    python pipeline.py preview <shot> [--step 4] [--percent 25] [--samples 16]   new preview-NN + contact sheet
+    python pipeline.py preview <shot> [--frames A-B] [--step 4] [--percent 25] [--samples 16]
+                                                      new preview-NN + contact sheet (--frames A-B --step 1: a
+                                                      consecutive run, to check motion at the scale of one frame)
     python pipeline.py render <shot> --take take-NN [--frames A-B] [--overlay] [--percent P] [--samples N]
     python pipeline.py sheet <frames dir> [--cols 8] [--width 320] [--max 48]
     python pipeline.py motion <frames dir> [--loop COUNT]
@@ -348,7 +350,7 @@ def cmd_render(a):
 def cmd_preview(a):
     s = shot(a.shot)
     out = next_dir(ROOT / 'renders' / a.shot, 'preview')
-    extra = ['--out', str(out), '--frames', s['render'], '--step', str(a.step), '--percent', str(a.percent),
+    extra = ['--out', str(out), '--frames', a.frames or s['render'], '--step', str(a.step), '--percent', str(a.percent),
              '--samples', str(a.samples)]
     t0 = time.time()
     device = render_py(s['blend'], extra, out.parent / f'{out.name}.log')
@@ -401,6 +403,10 @@ def cmd_motion(a):
         steps.append(float(np.abs(cur - prev).mean()))
         prev = cur
     steps = np.array(steps)
+    gap = int(np.diff([int(p.stem) for p in frames]).max())
+    if gap > 1:     # ART take-02's frame-to-frame lurch was invisible in previews of every 3rd and 4th frame
+        print(f'note: frames up to {gap} apart. A jerk at the scale of one frame cannot show here; also check a '
+              'consecutive run of the busiest moves (pipeline.py preview <shot> --frames A-B --step 1 --percent 50)')
     print(f'{len(frames)} frames; step median {np.median(steps):.2f}, p95 {np.percentile(steps, 95):.2f}, '
           f'max {steps.max():.2f} at {frames[int(steps.argmax()) + 1].stem}')
     flagged = []
@@ -557,6 +563,7 @@ def main():
     q.add_argument('--force', action='store_true')
     q = sub.add_parser('preview')
     q.add_argument('shot')
+    q.add_argument('--frames', help='A-B (default: the whole shot)')
     q.add_argument('--step', type=int, default=4)
     q.add_argument('--percent', type=int, default=25)
     q.add_argument('--samples', type=int, default=16)

@@ -68,7 +68,9 @@ Units are Å, ns and rad. The schematic and its sources are in `docs/motion.md`.
 | Function | Use |
 | --- | --- |
 | `clock(frames, ns_per_frame, holds)` | Molecular time per frame and each frame's span; `holds` slow or stop it for a labelled timescale change |
-| `ou(rng, times, exposure, shape, sigma, tau, shutter='box')` | Ornstein–Uhlenbeck processes on the clock, averaged over each frame's exposure. They diffuse at short times and are tethered at long times. `shutter='triangle'` weights the window softly, so diffusing bodies change speed smoothly instead of jerking every frame |
+| `ou(rng, times, exposure, shape, sigma, tau, shutter='box', period=None)` | Ornstein–Uhlenbeck processes on the clock, averaged over each frame's exposure. They diffuse at short times and are tethered at long times. `shutter='triangle'` weights the window softly, so diffusing bodies change speed smoothly instead of jerking every frame. `period` (ns) makes them repeat exactly, for loops (`periodic_ou`) |
+| `protein_motion(rng, X, resn, resi, name, chain, times, exposure, rmsf, tau, ..., period)` | The whole recipe for a protein or nucleic acid: residue-network normal modes plus side-chain turns scaled by burial. Ligands ride on the residue they bond to (whose side chain is held), other riders on the nearest node; large structures are coarsened. Returns the frame tables, mode shapes, topology and a report for `RESULT` |
+| `displacement(motion, X, f)` | Every atom's displacement on a frame, exactly as `groups.dynamics` applies it: for clearances, bond-strain and RMSF checks |
 | `exposure_factor(tau, window, shutter='box')` | How much of a motion survives exposure averaging |
 | `stokes_einstein`, `stokes_einstein_debye`, `ellipsoid`, `perrin` | Translational and rotational diffusion; Perrin prolate spheroids from a structure's second moments |
 | `rigid_brownian(rng, times, exposure, D_t, D_r, tether_t, tether_r)` | Tethered rigid-body diffusion and tumbling (per body axis) |
@@ -102,7 +104,7 @@ Units are Å, ns and rad. The schematic and its sources are in `docs/motion.md`.
 | | `collection`, `empty`, `keys`, `set_linear`, `fcurves`, `look_at`, `sun`, `show` | Building blocks; empties double as animated controllers |
 | | `cycles_settings(scene, res, frames, fps, samples)` | Studio defaults: GPU, adaptive sampling, denoised, Standard view |
 | `nodes` | `G`, `new_group`, `set_modifier_inputs`, `add_nodes_modifier` | A compact geometry-node builder; modifier inputs by socket name (5.x API) |
-| `groups` | `breath(prefix, ..., loop_frames)` | Coherent sway plus jitter; exactly periodic when `loop_frames` is set |
+| `groups` | `breath(prefix, ..., loop_frames)` | Coherent sway plus jitter; exactly periodic when `loop_frames` is set. Per-atom noise: kept for old scripts; new films use `dynamics` |
 | | `molecule(prefix, breath, ...)` | Spheres for context, ball-and-stick for roles, a camera-aimed cutaway funnel, a section slab, reveal groups, glow, optional per-residue offsets |
 | | `spheres`, `frame_spheres` | Plain or frame-indexed sphere clouds (lipids, ions) |
 | | `wave_packets` | Photons as a symbol |
@@ -113,6 +115,7 @@ Units are Å, ns and rad. The schematic and its sources are in `docs/motion.md`.
 | | `chain_motion(prefix, clock, bend, twist)` | A double helix that bends and twists along its arc length as a worm-like chain |
 | | `thermal(prefix, ...)` | Per-atom noise (version 2; kept for old scripts, not for new films) |
 | `mesh` | `points_mesh`, `frame_tracks`, `table`, `absolute_keys` | Attribute-carrying point meshes; per-frame tracks; lookup tables for geometry nodes; morphs as shape keys |
+| | `dynamics_tables(prefix, motion, collection, loop)`, `dynamics_attrs(motion, idx, turns)` | Frame tables and per-atom attributes for `groups.dynamics` from `dynamics.protein_motion` (a loop's last row repeats frame 1) |
 | `look` | `attr_material`, `flat_material`, `glow_material`, `ghost_material`, `gradient_world`, `bloom` | Materials, the studio backdrop (the camera sees a gradient, objects see the ambient), bloom |
 | `rig` | `bake_camera(cam, aim, path, aperture_ratio)`, `bake_location`, `bake_track` | Camera with tracking and proportional depth of field; controllers along keyed points or per-frame tracks (a clock, a moving target) |
 | `labels` | `label_pass(scene_name, prefix, spec, path, anchors, res, frames, fps, blend_path)` | The label scene: captions, evidence tags, timescales, pointers with leader lines, links between two anchors (solid or dashed, optional mid text: editorial guides, hypotheses), ink and halo switching per shot |

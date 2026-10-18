@@ -7,7 +7,9 @@ docs/framework.md and the case study in examples/channelrhodopsin/).
 The default film establishes the molecule, dives through a camera-aimed cutaway to the highlighted residues
 (by default the largest ligand) and holds on them with a label. With LOOP = True it is a seamless orbit instead.
 
-Evidence: the coordinates are the deposited experimental model; the breathing motion is illustrative. The
+Evidence: the coordinates are the deposited experimental model. The thermal motion is illustrative but physical
+(docs/motion.md): on one clock (1 s of film = CLOCK_NS ns), the molecule moves in elastic-network normal modes and
+its side chains turn about their bonds, at literature amplitudes and rates. It is not a simulation, and the
 on-screen tag says so. Give everything you add an evidence level (docs/principles.md).
 
 Run:  python pipeline.py build __NAME__        or, in Blender through MCP:
@@ -27,6 +29,7 @@ import molanim  # noqa: E402
 
 molanim.reload()
 from molanim import color  # noqa: E402
+from molanim import dynamics as D  # noqa: E402
 from molanim import structure as St  # noqa: E402
 from molanim import timeline as TL  # noqa: E402
 from molanim.blender import groups, labels, look, mesh, rig  # noqa: E402
@@ -76,7 +79,13 @@ ELEMENT = {'C': ((196, 198, 196), (232, 232, 228)), 'N': ((52, 92, 220), (92, 13
            'O': ((214, 52, 44), (240, 92, 80)), 'S': ((226, 186, 40), (246, 214, 90)), 'P': ((236, 150, 60), (250, 180, 90))}
 SECTION_RGB, SECTION_MIX = (176, 220, 212), 0.45
 PROTEIN_SCALE, BALL_SCALE, STICK_RADIUS = 0.64, 0.28, 0.16
-BREATH = {'sway': 0.35, 'sway_size': 30.0, 'jitter': 0.12, 'jitter_size': 5.0}
+# Thermal motion (docs/motion.md; illustrative, from measured rates, not simulated). One clock: 1 s of film =
+# CLOCK_NS ns, and each frame shows the average over EXPOSURE frames of it, so faster motion averages out. The
+# molecule moves as a molecule: normal modes of a residue network (mean node RMSF, softest relaxation time) and
+# side-chain turns about bonds (buried -> exposed); a ligand rides on the residue it touches. The camera follows
+# the molecule, so its own tumbling is not shown. With LOOP the motion repeats exactly every FRAMES frames.
+CLOCK_NS, EXPOSURE = 1.0, 2.0
+MOTION = {'rmsf': 0.8, 'tau': 50.0, 'cutoff': 15.0, 'modes': 30, 'chi_sd': (8.0, 18.0), 'chi_tau': (1.5, 0.3)}
 KEY_DIR, KEY_STRENGTH, RIM_DIR, RIM_STRENGTH = (-0.55, -0.75, 0.9), 3.6, (0.6, 1.0, 0.5), 1.6
 BLOOM = {'threshold': 1.0, 'strength': 0.45, 'size': 0.55}
 
@@ -191,8 +200,14 @@ def build():
     acc = hl & (t['element'] == 'C')
     hi[acc] = color.shade(rng, ACCENT_C, acc.sum(), 0.4, 1.0)
 
-    breath = groups.breath(PREFIX, loop_frames=FRAMES if LOOP else None, **BREATH)
-    ng = groups.molecule(PREFIX, breath, PROTEIN_SCALE, BALL_SCALE, STICK_RADIUS, SECTION_RGB, SECTION_MIX)
+    # --- thermal motion: numpy knows every atom's displacement on every frame (D.displacement)
+    times, rate = D.clock(FRAMES, CLOCK_NS / FPS)
+    motion = D.protein_motion(np.random.default_rng(7), X, t['resn'], t['resi'], t['name'], t['chain'], times,
+                              rate * EXPOSURE, period=FRAMES * CLOCK_NS / FPS if LOOP else None, **MOTION)
+    modes_tab, chi_tab, rows = mesh.dynamics_tables(PREFIX, motion, col_rig, loop=LOOP)
+    dyn = groups.dynamics(PREFIX, modes_tab, rows, motion['q'].shape[1], chi_tab, motion['topo']['residues'])
+    ng = groups.molecule(PREFIX, None, PROTEIN_SCALE, BALL_SCALE, STICK_RADIUS, SECTION_RGB, SECTION_MIX,
+                         thermal_group=dyn)
     mat = look.attr_material(PREFIX + 'Atom', roughness=0.42, specular=0.45, sheen=0.15)
 
     cam = bpy.data.objects.new(PREFIX + 'Camera', bpy.data.cameras.new(PREFIX + 'Camera'))
@@ -207,7 +222,7 @@ def build():
              'stick_w': ('FLOAT', np.ones(n)), 'dilate': ('FLOAT_VECTOR', np.zeros((n, 3))),
              'g0': ('FLOAT', (role == 2).astype(float)), 'g1': ('FLOAT', (role == 1).astype(float)), 'g2': ('FLOAT', np.zeros(n)),
              'col_ctx': ('FLOAT_COLOR', ctx), 'col_hi': ('FLOAT_COLOR', hi),
-             'emit_w': ('FLOAT', np.where(hl, 0.6, 0.0)), 'glow_w': ('FLOAT', np.zeros(n))}
+             'emit_w': ('FLOAT', np.where(hl, 0.6, 0.0)), 'glow_w': ('FLOAT', np.zeros(n)), **mesh.dynamics_attrs(motion)}
     mol = mesh.points_mesh(PREFIX + 'Molecule', X, edges, attrs, col_main)
     mod = mol.modifiers.new('Atoms', 'NODES')
     mod.node_group = ng
@@ -259,6 +274,7 @@ def build():
                 'shot_ink': [(1, 'dark')] if LOOP else [(1, 'dark'), (beat('cut')[1], 'light')],
                 'captions': [(10, FRAMES if LOOP else max(e1, 60), TITLE, SUBTITLE or (entry_title.capitalize() if entry_title.isupper() else entry_title))],
                 'tags': [(10, FRAMES, f'{entry_method}  ·  PDB {PDB_ID}  ·  MOTION ILLUSTRATIVE')],
+                'times': [(10, FRAMES, f'1 s of film ≈ {CLOCK_NS:g} ns')],
                 'pointers': []}
         if not LOOP and focus_text:
             spec['captions'].append((r0, FRAMES, focus_text, 'Highlighted residues as ball-and-stick'))
@@ -267,12 +283,29 @@ def build():
                                          FRAMES + 1 if LOOP else FRAMES, FPS, LABEL_BLEND)
     SC.show(scene)
 
+    # --- motion checks: RMSF over the film and the strain of the drawn bonds (every 6th frame), loop seam
+    disp = np.stack([D.displacement(motion, X, f) for f in range(0, FRAMES, 6)])
+    rmsf = np.sqrt(((disp - disp.mean(0)) ** 2).sum(2).mean(0))
+    back = np.isin(t['name'], ['N', 'CA', 'C', 'O'])
+    strain = 0.0
+    if len(edges):
+        P = X + disp
+        strain = float(np.abs(np.linalg.norm(P[:, edges[:, 0]] - P[:, edges[:, 1]], axis=2)
+                              - np.linalg.norm(X[edges[:, 0]] - X[edges[:, 1]], axis=1)).max())
+    step = [float(np.median(np.linalg.norm(D.displacement(motion, X, b) - D.displacement(motion, X, a), axis=1)))
+            for a, b in ((0, 1), (FRAMES - 1, 0))]
+    motion_result = {**motion['report'], 'clock_ns_per_s': CLOCK_NS, 'exposure_frames': EXPOSURE,
+                     'rmsf_backbone_A': round(float(np.median(rmsf[back])), 2),
+                     'rmsf_side_chain_A': round(float(np.median(rmsf[~back])), 2),
+                     'max_stick_strain_A': round(strain, 3), 'step_A': round(step[0], 3),
+                     'loop_seam_step_A': round(step[1], 3) if LOOP else None}
+
     return {
         'blender': bpy.app.version_string, 'scene': scene.name, 'pdb': PDB_ID, 'title': entry_title,
         'method': entry_method, 'atoms': n, 'chains': chains, 'highlight': names, 'pocket_atoms': int(pocket.sum()),
         'stick_bonds': len(edges), 'radius_A': round(radius, 1), 'fit_distance_A': round(fit, 1), 'loop': LOOP,
         'frames': FRAMES, 'camera_seam_A': round(float(np.linalg.norm(path[FRAMES][1] - path[0][1])), 6) if LOOP else None,
-        'blend': str(BLEND_PATH), 'labels': label_result,
+        'motion': motion_result, 'blend': str(BLEND_PATH), 'labels': label_result,
     }
 
 

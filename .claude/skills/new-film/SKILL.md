@@ -26,7 +26,7 @@ Follow `docs/workflow.md`. It is the authority; the steps below are a checklist.
 5. **Look-dev.**
    - Run `python pipeline.py still <name> <frame> --percent 50` (add `--overlay` for labels) at each key frame, and read the PNGs.
    - Fold every fix back into the script.
-6. **Preview.** Run `python pipeline.py preview <name>` and read the contact sheet. Run `python pipeline.py motion` on the preview folder. Fix timing before any final render.
+6. **Preview.** Run `python pipeline.py preview <name>` and read the contact sheet. Run `python pipeline.py motion` on the preview folder. Then check the busiest moves on consecutive frames (`preview <name> --frames A-B --step 1 --percent 50`, then `motion`): stepped previews hide frame-scale jerks. Fix timing and motion before any final render.
 7. **Final.**
    - Run `python pipeline.py render <name> --take take-NN` in the background, then `--overlay --take labels-NN`.
    - Point `shots.json` at both takes, then run `python pipeline.py deliver <name>`.

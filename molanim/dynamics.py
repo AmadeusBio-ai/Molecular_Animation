@@ -143,15 +143,18 @@ def window_mean(grid, path, times, exposure, shutter='box'):
     return np.where(width > step, mean, at(path, times))
 
 
-def ou(rng, times, exposure, shape, sigma, tau, substeps=8, shutter='box'):
+def ou(rng, times, exposure, shape, sigma, tau, substeps=8, shutter='box', period=None):
     """Ornstein-Uhlenbeck processes (stationary RMS `sigma`, correlation time `tau` in ns; both broadcast to
     `shape`), shown at the frame `times` and averaged over each frame's `exposure` (ns). At times short
     compared with tau an OU process diffuses with D = sigma^2 / tau per axis; at long times it stays within
-    ~sigma of zero (a tethered or caged random walk). `shutter` as in window_mean. Returns (frames, *shape)."""
+    ~sigma of zero (a tethered or caged random walk). `shutter` as in window_mean. With `period` (ns) the
+    processes repeat exactly (see periodic_ou). Returns (frames, *shape)."""
     times, exposure = np.asarray(times, float), np.asarray(exposure, float)
     shape = (shape,) if isinstance(shape, int) else tuple(shape)
     sigma = np.broadcast_to(np.asarray(sigma, float), shape)
     tau = np.broadcast_to(np.asarray(tau, float), shape)
+    if period is not None:
+        return periodic_ou(rng, times, exposure, shape, sigma, tau, period, shutter)
     pos = exposure[exposure > 0]
     window = np.median(pos) if len(pos) else 1.0
     h = window / substeps
@@ -171,6 +174,28 @@ def ou(rng, times, exposure, shape, sigma, tau, substeps=8, shutter='box'):
     for k in range(1, len(grid)):
         path[k] = path[k - 1] * a + noise * rng.normal(size=shape)
     return window_mean(grid, path, times, exposure, shutter)
+
+
+def periodic_ou(rng, times, exposure, shape, sigma, tau, period, shutter='box'):
+    """Stationary processes with the OU spectrum (RMS `sigma`, correlation time `tau`) on the harmonics of
+    `period` (ns), so they repeat exactly: for loops, frame n + 1 equals frame 1. Each harmonic is averaged over
+    the exposure as a box or triangle shutter would (sinc gains). The frames must be evenly spaced and span the
+    period (a loop's clock without holds). Close to an OU process while tau is well below the period; a motion
+    slower than the loop cannot repeat and freezes into an offset. Returns (frames, *shape)."""
+    n = len(times)
+    if n < 2 or not np.allclose(np.diff(times), period / n, rtol=1e-6, atol=1e-12):
+        raise ValueError('periodic_ou: frames must be evenly spaced and span the period (no clock holds)')
+    shape = (shape,) if isinstance(shape, int) else tuple(shape)
+    k = np.arange(n // 2 + 1).reshape(-1, *([1] * len(shape)))
+    w = 2 * math.pi / period * k
+    fold = np.where((k == 0) | (2 * k == n), 1.0, 2.0)          # one-sided spectrum: +-k fold into k
+    power = fold / (1 + (w * np.asarray(tau, float)) ** 2)
+    power = power / power.sum(0) * np.asarray(sigma, float) ** 2
+    e = float(np.median(np.asarray(exposure, float)))
+    gain = np.sinc(w * e / (2 * math.pi)) if shutter == 'box' else np.sinc(w * e / (4 * math.pi)) ** 2
+    amp = np.sqrt(power) * gain
+    a, b = rng.normal(size=amp.shape) * amp, rng.normal(size=amp.shape) * amp
+    return np.fft.irfft(n * (a - 1j * b) / fold, n, axis=0)      # a_k cos + b_k sin, summed over k
 
 
 def exposure_factor(tau, window, shutter='box'):
@@ -245,12 +270,13 @@ def anm(nodes, cutoff=15.0, gamma=1.0, modes=None, bonded=None, bonded_gamma=10.
     return w[keep], v[:, keep].reshape(n, 3, -1)
 
 
-def mode_amplitudes(rng, eigvals, times, exposure, scale, tau_softest, substeps=8, shutter='box'):
+def mode_amplitudes(rng, eigvals, times, exposure, scale, tau_softest, substeps=8, shutter='box', period=None):
     """Langevin dynamics of normal modes in the overdamped limit: mode k is an OU process with variance
     scale / lambda_k (equipartition, scale = kT / gamma) and correlation time tau_softest * lambda_0 / lambda_k
     (friction / stiffness). Soft modes are large and slow, stiff ones small and fast. Returns (frames, k)."""
     lam = np.asarray(eigvals, float)
-    return ou(rng, times, exposure, (len(lam),), np.sqrt(scale / lam), tau_softest * lam[0] / lam, substeps, shutter)
+    return ou(rng, times, exposure, (len(lam),), np.sqrt(scale / lam), tau_softest * lam[0] / lam, substeps, shutter,
+              period)
 
 
 def mode_scale(eigvals, eigvecs, rmsf):
@@ -381,3 +407,95 @@ def burial(xyz, probe_idx, radius=10.0):
         P = X[probe_idx[k:k + 256]]
         out[k:k + 256] = (np.linalg.norm(P[:, None] - X[None], axis=2) < radius).sum(1) - 1
     return out
+
+
+# ----------------------------------------------------------------------------- a whole molecule
+
+AMINO = set(CHI2_AXIS) | NO_CHI | {'CYS', 'SER', 'THR', 'VAL', 'MSE'}   # side-chain turns only for these
+WATER = {'HOH', 'WAT', 'DOD'}
+
+
+def _nearest(P, Q):
+    """Index into Q of the point nearest each point of P, and its distance."""
+    idx, dist = np.zeros(len(P), int), np.zeros(len(P))
+    for k in range(0, len(P), 512):
+        d = np.linalg.norm(P[k:k + 512, None] - Q[None], axis=2)
+        idx[k:k + 512] = d.argmin(1)
+        dist[k:k + 512] = d.min(1)
+    return idx, dist
+
+
+def protein_motion(rng, X, resn, resi, name, chain, times, exposure, rmsf=0.8, tau=50.0, cutoff=15.0, modes=30,
+                   chi_sd=(8.0, 18.0), chi_tau=(1.5, 0.3), held=None, period=None, shutter='box', max_nodes=2500):
+    """Thermal motion inside a protein or nucleic acid, for groups.dynamics (docs/motion.md): anisotropic-network
+    normal modes, one node per residue (CA, P or C4'; sequence neighbours 10x stiffer), calibrated to a mean node
+    RMSF of `rmsf` A with the softest mode relaxing in `tau` ns, plus side-chain chi1/chi2 turns within the
+    rotamer well, `chi_sd` (deg) and `chi_tau` (ns) from buried to exposed.
+
+    Residues without a node (ligands, waters, ions) ride rigidly on one: a ligand within covalent reach (2.1 A)
+    of the polymer on the residue it bonds to, whose side chain is then held still so the bond stays intact;
+    anything else on the nearest node. `held` (atom mask) holds more side chains. Above `max_nodes` residues the
+    network keeps every stride-th node and widens its cutoff. `period` (ns) makes every motion repeat exactly
+    (loops). Returns {'q': (frames, modes), 'shapes': (atoms, 3, modes), 'chi': (frames, residues, 2) rad,
+    'topo': chi_topology(), 'report': numbers for RESULT}; displacement() gives every atom's motion on a frame."""
+    X = np.asarray(X, float)
+    resn, resi, name = np.asarray(resn), np.asarray(resi), np.asarray(name)
+    chain = np.full(len(X), '') if chain is None else np.asarray(chain)
+    nodes, node_of = residue_nodes(resi, name, chain)
+    hold = np.zeros(len(X), bool) if held is None else np.array(held, bool)
+    residue = np.array([f'{c}:{r}:{n}' for c, r, n in zip(chain, resi, resn)])
+    rider, partners, bonded = node_of < 0, np.zeros(len(X), bool), []
+    if rider.any():
+        poly = np.nonzero(node_of >= 0)[0]
+        for key in np.unique(residue[rider]):
+            idx = np.nonzero(residue == key)[0]
+            near, dist = (None, None) if resn[idx[0]] in WATER else _nearest(X[idx], X[poly])
+            if dist is not None and dist.min() < 2.1:              # covalently bonded: ride on that residue
+                partner = poly[near[dist.argmin()]]
+                node_of[idx] = node_of[partner]
+                partners |= residue == residue[partner]
+                bonded.append(f'{key} - {residue[partner]}')
+            else:
+                node_of[idx] = _nearest(X[idx].mean(0)[None], X[nodes])[0][0]
+    stride = max(1, math.ceil(len(nodes) / max_nodes))
+    keep = nodes[::stride]
+    if stride > 1:                                                 # every residue joins its nearest kept node
+        node_of = _nearest(X[nodes], X[keep])[0][node_of]
+    P = X[keep]
+    reach = np.where(name[keep] == 'CA', 4.3, 7.5) * stride       # CA-CA 3.8 A, P-P up to ~7 A
+    same = chain[keep][1:] == chain[keep][:-1]
+    links = [(int(i), int(i) + 1) for i in np.nonzero(same & (np.linalg.norm(P[1:] - P[:-1], axis=1) < reach[:-1]))[0]]
+    width = cutoff * stride ** (1 / 3)
+    eig, vec = anm(P, width, modes=min(modes, 3 * len(keep) - 6), bonded=links)
+    scale = mode_scale(eig, vec, rmsf)
+    q = mode_amplitudes(rng, eig, times, exposure, scale, tau, shutter=shutter, period=period)
+    shapes = atom_shapes(X, vec, keep, node_of, links, rigid=rider | partners)     # riders move as one with their residue
+    hold |= partners
+    topo = chi_topology(resn, resi, name, chain)
+    still = np.isin(topo['slot'], np.unique(topo['slot'][hold])) | ~np.isin(resn, list(AMINO))
+    for k in ('chi1_w', 'chi2_w'):
+        topo[k] = np.where(still, 0.0, topo[k])
+    n_res = topo['residues']
+    first = {}
+    for i, s in enumerate(topo['slot']):                           # burial probe per residue: CB, else CA, else first
+        rank = {'CB': 0, 'CA': 1}.get(str(name[i]), 2)
+        if s not in first or rank < first[s][0]:
+            first[s] = (rank, i)
+    crowd = burial(X, np.array([first[s][1] for s in range(n_res)]))
+    lo, hi = np.percentile(crowd, [10, 90])
+    exposed = np.clip((hi - crowd) / max(hi - lo, 1.0), 0, 1)
+    sd = np.radians(chi_sd[0] + (chi_sd[1] - chi_sd[0]) * exposed)
+    ctau = chi_tau[0] * (chi_tau[1] / chi_tau[0]) ** exposed
+    chi = ou(rng, times, exposure, (n_res, 2), sd[:, None], ctau[:, None], shutter=shutter, period=period)
+    report = {'nodes': len(keep), 'stride': stride, 'cutoff_A': round(width, 1), 'modes': len(eig),
+              'node_rmsf_A': rmsf, 'tau_ns': [round(float(tau), 1), round(float(tau * eig[0] / eig[-1]), 2)],
+              'turning_residues': int(len(np.unique(topo['slot'][topo['chi1_w'] > 0]))), 'riders': len(np.unique(residue[rider])),
+              'bonded_riders': bonded, 'periodic': period is not None}
+    return {'q': q, 'shapes': shapes, 'chi': chi, 'topo': topo, 'report': report}
+
+
+def displacement(motion, X, f):
+    """Every atom's displacement (A) on frame index f (0-based), as groups.dynamics applies it: side-chain
+    turns at rest, then the normal modes."""
+    turned = apply_chi(X, motion['topo'], motion['chi'][f, :, 0], motion['chi'][f, :, 1])
+    return turned - np.asarray(X, float) + motion['shapes'] @ motion['q'][f]

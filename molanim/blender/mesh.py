@@ -47,6 +47,33 @@ def table(name, columns, collection):
     return points_mesh(name, np.zeros((rows, 3)), None, attrs, collection)
 
 
+def dynamics_tables(prefix, motion, collection, loop=False):
+    """Frame tables for groups.dynamics from dynamics.protein_motion() ({'q': (frames, modes), 'chi': (frames,
+    residues, 2)}). Returns (modes table, chi table or None, rows): pass `rows` as groups.dynamics' frames. With
+    loop=True a last row repeats frame 1, so frame frames + 1 equals frame 1."""
+    q, chi = motion['q'], motion.get('chi')
+    if loop:
+        q, chi = np.concatenate([q, q[:1]]), None if chi is None else np.concatenate([chi, chi[:1]])
+    qp = np.pad(q, ((0, 0), (0, -q.shape[1] % 3)))
+    modes = table(prefix + 'Modes', {f'q{j}': qp[:, 3 * j:3 * j + 3] for j in range(qp.shape[1] // 3)}, collection)
+    chi_tab = None if chi is None else table(prefix + 'Chi', {'chi': np.pad(chi, ((0, 0), (0, 0), (0, 1))).reshape(-1, 3)},
+                                             collection)
+    return modes, chi_tab, len(q)
+
+
+def dynamics_attrs(motion, idx=None, turns=True):
+    """Point attributes for groups.dynamics from dynamics.protein_motion(): mode shapes 'm0', 'm1'... and, with
+    `turns`, the side-chain topology. `idx` selects atoms for a mesh that holds only some of them (a ghost, a
+    marker); their turn axes refer to the full mesh, so such meshes take turns=False."""
+    idx = slice(None) if idx is None else idx
+    shapes, topo = motion['shapes'][idx], motion['topo']
+    out = {f'm{k}': ('FLOAT_VECTOR', shapes[:, :, k]) for k in range(shapes.shape[2])}
+    if turns:
+        out['res_i'] = ('FLOAT', topo['slot'][idx])
+        out.update({k: ('FLOAT', topo[k][idx]) for k in ('chi1_w', 'chi2_w', 'i_ca', 'i_cb', 'i_cg')})
+    return out
+
+
 def absolute_keys(obj, snapshots):
     """Absolute shape keys: snapshot k sits at eval_time 10 k (linear between neighbours). Key the returned
     Key's eval_time to play a morph; every representation built on this mesh follows the same coordinates."""
