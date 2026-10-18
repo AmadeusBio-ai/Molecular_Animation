@@ -9,7 +9,7 @@ A 21 s scientific illustration for the 2026 Nobel Prize in Physiology or Medicin
 2. The protein's interaction network rearranges (Lys132 swings to Glu129).
 3. The cation pathway is shown first as the crystal has it, interrupted, then open in a labelled, illustrative conducting-state model.
 
-The film comes in a labelled and a clean version (1920×1080, 24 fps, MP4 + WebM), published in the `v0.1.0` release. Get them with `python pipeline.py fetch channelrhodopsin`.
+The film comes in a labelled and a clean version (1920×1080, 24 fps, MP4 + WebM). Version 3, with motion from physics, is published in the [`v0.2.0` release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.2.0); get it with `python pipeline.py fetch channelrhodopsin`. Version 1 (no thermal motion, the original palette) stays in [`v0.1.0`](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.1.0).
 
 ## From brief to film
 
@@ -30,6 +30,7 @@ The film comes in a labelled and a clean version (1920×1080, 24 fps, MP4 + WebM
 - **Representation modes.** The camera moves from a sphere surface to ball-and-stick for the mechanism, then to a cavity tube for connectivity. Camera-aimed cutaways and a section slab replace global transparency (`molanim.blender.groups.molecule`).
 - **Data before story.** The crystal's pathway is interrupted, so the film shows that first. The opening is a labelled illustrative step (`molanim.pathway`).
 - **Honest particles.** Ions dwell irregularly at binding sites, never share a site, and keep at least 1.70 Å from every atom surface (`molanim.particles`).
+- **Motion from physics** (version 3). One clock, 1 s of film = 1 ns: the protein moves in elastic-network normal modes, side chains turn about their bonds, lipids move as molecules, Na⁺ diffuses, all at literature rates (`molanim.dynamics`, `docs/motion.md`). Version 2's per-atom noise stretched lipid bonds by 0.6 Å and merged neighbouring molecules; `record.md` measures the difference.
 - **Separate label pass.** The labelled and clean films come from one Cycles render (`molanim.blender.labels`).
 
 ## Reproduce

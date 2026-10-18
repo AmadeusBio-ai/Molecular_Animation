@@ -15,7 +15,7 @@
       "crf": [16, 24],
       "posters": {"channelrhodopsin-poster-wide.png": 70, "channelrhodopsin-poster-retinal.png": 204,
                   "channelrhodopsin-poster-channel.png": 470},
-      "release": {"tag": "v0.1.0", "asset": "channelrhodopsin-delivery.zip"}
+      "release": {"tag": "v0.2.0", "asset": "channelrhodopsin-delivery.zip"}
     }
   }
 }

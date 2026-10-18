@@ -16,7 +16,7 @@ Blender modules (import inside Blender 5.x only): molanim.blender.*
 import importlib
 import sys
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 _ORDER = ('color', 'timeline', 'structure', 'morph', 'pathway', 'membrane', 'dynamics', 'particles',
           'blender.scene', 'blender.nodes', 'blender.groups', 'blender.mesh', 'blender.look', 'blender.rig',

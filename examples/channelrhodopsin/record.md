@@ -1,6 +1,6 @@
 # Channelrhodopsin shot: production record · 2026-10-06
 
-**Status:** delivered 2026-10-06. Rebuilt on the `molanim` framework on 2026-10-07 with identical output (see Checks). Version 2 (thermal motion, website palette) delivered 2026-10-07; version 3 (motion from physics) delivered 2026-10-18 to `delivery/channelrhodopsin-v3/` (take-04, labels-05) (see the last two sections).
+**Status:** delivered 2026-10-06. Rebuilt on the `molanim` framework on 2026-10-07 with identical output (see Checks). Version 2 (thermal motion, website palette) delivered 2026-10-07; version 3 (motion from physics) delivered 2026-10-18 to `delivery/channelrhodopsin-v3/` (take-04, labels-05) and published in release v0.2.0 (see the last two sections).
 
 A 21 s scientific illustration for `sources/Nobel_Med_2026.md` (generated with ChatGPT; provenance in `sources/README.md`), direction 1, "The twist that opens a pathway". The brief recommends building this shot first. A photon isomerises retinal in the channelrhodopsin C1C2, the protein rearranges (Lys132 swings to Glu129), and the cation pathway is shown first interrupted, then open in an illustrative conducting-state model. The look is the studio molecular style: atoms as spheres, a pale backdrop, shallow depth of field, a teal protein with an amber chromophore.
 
@@ -123,7 +123,7 @@ The site owner found the delivered film too still: the lipids, side chains and r
   | `channelrhodopsin-clean.mp4` | H.264 | 504 | 21.0 s | 30.5 MB |
   | `channelrhodopsin-clean.webm` | VP9 | 504 | 21.0 s | 19.3 MB |
 
-  All are 1920×1080 at 24 fps, at the version 1 settings (CRF 16 / 24). The thermal motion makes them 1.7–2.2 times the size of version 1. Against the PNG frames (every 24th frame) the clean MP4 measures 41.2 dB (min 39.7) and the clean WebM 41.8 dB (min 40.3). Posters (clean): `-poster-wide.png` (frame 70), `-poster-retinal.png` (204), `-poster-channel.png` (470). Release v0.1.0 still holds version 1; the delivery zip is not rebuilt yet.
+  All are 1920×1080 at 24 fps, at the version 1 settings (CRF 16 / 24). The thermal motion makes them 1.7–2.2 times the size of version 1. Against the PNG frames (every 24th frame) the clean MP4 measures 41.2 dB (min 39.7) and the clean WebM 41.8 dB (min 40.3). Posters (clean): `-poster-wide.png` (frame 70), `-poster-retinal.png` (204), `-poster-channel.png` (470). Release v0.1.0 holds version 1; version 2 was not released (version 3 is in v0.2.0).
 - **Website.** The film replaces version 1 on amadeusbio.ai (`docs/media.md` in the website repository, "October 2026, fourth round"). The website encodes needed higher bitrates than version 1 to stay within 2 dB of it: VP9 1800k / 1300k and H.264 2200k / 2000k at 1080 / 720.
 
 ## Version 3 (2026-10-17): motion from physics

@@ -13,15 +13,16 @@ It is designed to be driven by an AI agent (Claude Code through Blender MCP) and
 
 https://github.com/user-attachments/assets/3e74cbad-caa4-4fd7-9cd3-a1a217ec0104
 
-*Case study: [channelrhodopsin](examples/channelrhodopsin/), from a brief on the 2026 Nobel Prize in Physiology or Medicine. A photon twists retinal, the protein responds, and a cation pathway opens. 21 s, built from PDB 9GO1/9GO2. Full-quality labelled and clean films are in the [v0.1.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.1.0).*
+*Case study: [channelrhodopsin](examples/channelrhodopsin/), from a brief on the 2026 Nobel Prize in Physiology or Medicine. A photon twists retinal, the protein responds, and a cation pathway opens. 21 s, built from PDB 9GO1/9GO2. Full-quality labelled and clean films of version 3, whose thermal motion follows measured rates, are in the [v0.2.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.2.0).*
 
 ## What's inside
 
 - **`molanim`, the framework.**
-  - A pure-numpy science layer: mmCIF and assemblies, atom-matched states, constrained morphs, pathway profiles, procedural membranes, illustrative ion motion, camera paths. It is unit-tested and runs anywhere.
-  - A Blender layer: sphere and ball-and-stick molecules with camera-aimed cutaways, cavity tubes, interaction markers, a studio look, a depth-of-field camera rig, and a separate label pass for captions, evidence tags and pointers.
-- **`pipeline.py`.** One command line for the whole production: `new` → `build` → `still` → `preview` → `render` → `deliver`, plus `doctor`, `motion` (jump and seam detection), `smoke` and `check` (re-render a poster frame and compare it with the delivery).
-- **A workflow and principles** for films that are both beautiful and scientifically honest: [docs/workflow.md](docs/workflow.md), [docs/principles.md](docs/principles.md).
+  - A pure-numpy science layer: mmCIF and assemblies, atom-matched states, constrained morphs, pathway profiles, procedural membranes, ion diffusion and transits, camera paths. It is unit-tested and runs anywhere.
+  - Thermal and Brownian motion from physics ([docs/motion.md](docs/motion.md)): one clock per film, exposure-averaged frames, and molecules that move as molecules (hydrodynamic tumbling and diffusion, elastic-network normal modes, side-chain turns about bonds, lipids as bodies, worm-like DNA), at rates from the literature. Loops repeat exactly.
+  - A Blender layer: sphere and ball-and-stick molecules with camera-aimed cutaways, cavity tubes, interaction markers, a studio look, a depth-of-field camera rig, and a separate label pass for captions, evidence tags, pointers and links.
+- **`pipeline.py`.** One command line for the whole production: `new` → `build` → `still` → `preview` → `render` → `deliver`, plus `doctor`, `motion` (jump and seam detection, on stepped previews and consecutive runs), `smoke` and `check` (re-render a poster frame and compare it with the delivery).
+- **A workflow and principles** for films that are both beautiful and scientifically honest: [docs/workflow.md](docs/workflow.md), [docs/principles.md](docs/principles.md), [docs/motion.md](docs/motion.md).
 - **An agent guide** ([AGENTS.md](AGENTS.md)) and a `/new-film` skill for Claude Code.
 
 ## Quick start
@@ -80,17 +81,17 @@ templates/shot/       the project scaffold
 assets/pdb/           structures from RCSB + SHA256SUMS
 tools/                render.py (inside Blender), encode.py, MCP smoke test, Windows MCP launcher
 tests/                pytest suite (runs in CI without Blender)
-docs/                 workflow, principles, framework API, setup, Blender 5 notes
+docs/                 workflow, principles, motion schematic, framework API, setup, Blender 5 notes
 AGENTS.md, CLAUDE.md  agent guide; .claude/skills/new-film is the /new-film skill
 ```
 
-`renders/`, `delivery/` and `.blend` files are build products and are ignored by git. The case study's delivered films are in the [v0.1.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.1.0); get them with `python pipeline.py fetch channelrhodopsin`.
+`renders/`, `delivery/` and `.blend` files are build products and are ignored by git. The case study's delivered films are in the [v0.2.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.2.0) (version 1 in [v0.1.0](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.1.0)); get them with `python pipeline.py fetch channelrhodopsin`.
 
 ## Reproducibility
 
-- **Scripts are the source.** Builds are idempotent and report their numerical checks in `RESULT`. For the case study these are the retinal dihedral path, the salt-bridge distance, the worst morph bond deviation, the pathway profile and the ion clearance.
+- **Scripts are the source.** Builds are idempotent and report their numerical checks in `RESULT`. For the case study these are the retinal dihedral path, the salt-bridge distance, the worst morph bond deviation, the pathway profile, the ion clearance against the moving protein and the motion statistics.
 - **Pinned inputs.** Structures are committed with checksums. Blender 5.2 is pinned. Every Blender call uses `--factory-startup`, and the GPU is selected explicitly.
-- **Verified output.** `pipeline.py check` rebuilds a shot and compares a freshly rendered poster frame with the delivered one. After the case study was refactored onto `molanim`, its posters matched within 1/255 and its label frames were pixel-identical.
+- **Verified output.** `pipeline.py check` rebuilds a shot and compares a freshly rendered poster frame with the delivered one. After the case study was refactored onto `molanim`, its posters matched within 1/255 and its label frames were pixel-identical; version 3's poster still matches within 1/255 after the template's motion was generalised.
 
 ## Contributing
 
