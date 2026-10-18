@@ -19,7 +19,7 @@ The film comes in a labelled and a clean version (1920×1080, 24 fps, MP4 + WebM
 | **Brief as understood** | `brief.md`: the one idea, structures with evidence levels, the claims to verify, look and deliverables |
 | **Science, checked in code** | `c1c2.py`: 9GO1/9GO2 matched atom by atom (alt B, +307 numbering); retinal dihedral −176° → +0.6°; Lys132–Glu129 9.0 → 2.66 Å; the 9GO2 pathway is interrupted (free radius ≈ 0 Å) |
 | **Storyboard as constants** | top of `channelrhodopsin.py`: timeline beats, camera keys, palette, captions, evidence tags, timescales, pointers |
-| **Build** | `python pipeline.py build channelrhodopsin` (~25 s): 2 × 2,321 protein atoms, 494k lipid atoms, ions, photons, a label scene |
+| **Build** | `python pipeline.py build channelrhodopsin` (~70 s, with the motion tables): 2 × 2,321 protein atoms, 494k lipid atoms, ions, photons, a label scene |
 | **Render and deliver** | `shots.json`: take, label pass, CRFs and poster frames; `pipeline.py render` / `deliver` |
 | **Record** | `record.md`: what was built, the numbers, evidence per beat, checks, review method, known limits |
 
