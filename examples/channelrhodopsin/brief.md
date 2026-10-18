@@ -5,6 +5,9 @@
 > "refer to @Nobel_Med_2026.md and generate scientific illustrative animation for the molecular interaction. Make it pretty, you can refer to existing examples and workflow for aesthetic reference on how should professional animation looks like"
 
 - **Source document:** `sources/Nobel_Med_2026.md`. It was generated with ChatGPT (web) and shared at <https://chatgpt.com/share/6ac61833-1620-83e8-a4ab-a519971d1b0f>; provenance is in `sources/README.md`. The prize went to Deisseroth, Hegemann and Nagel for light-gated ion channels and optogenetics. The document proposes six directions and recommends building the retinal-pocket shot of direction 1 first.
+- **Follow-ups (owner):**
+  - 2026-10-07: the site owner found the film too still: the lipids, side chains and retinal showed no Brownian motion. Version 2, which also moved the look to the amadeusbio.ai palette.
+  - 2026-10-17: "for the channelrhodopsin v2 animation the motion looks unrealistic, and molecules seems to blur together since the movement is too random. think about molecularly of how everything should move, search in depth, then output based on an accurate schematic." Version 3, delivered to `delivery/channelrhodopsin-v3/` (`record.md`, `docs/motion.md`).
 - **References:** the studio molecular look (atoms as spheres, pale backdrop, shallow depth of field) from earlier in-house work. No reference media are distributed.
 
 ## Interpretation
@@ -28,13 +31,13 @@
   - the 9GO2 pathway's free radius (interrupted).
 - **Look:**
   - atoms as spheres, soft studio light on a pale backdrop, shallow depth of field;
-  - one warm accent (amber retinal) against a muted teal protein;
+  - one warm accent (amber retinal) against a muted teal protein (version 1; versions 2 and 3 use the website's navy and slate);
   - evidence level stated on screen.
 
 ## Deliverables
 
 - **Format:** about 21 s, 1920×1080, 24 fps, narrative (not a loop).
 - **Versions:** labelled and clean.
-- **Files:** MP4 + WebM + posters, in `delivery/channelrhodopsin/`.
+- **Files:** MP4 + WebM + posters, in `delivery/channelrhodopsin/` (version 3: `delivery/channelrhodopsin-v3/`, published in release v0.2.0).
 
 Result and checks: `record.md`.

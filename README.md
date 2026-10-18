@@ -41,7 +41,7 @@ Start a film from any PDB entry:
 
 ```
 python pipeline.py new gfp --pdb 1EMA --title "Green fluorescent protein"
-python pipeline.py build gfp                   # ~3 s: projects/gfp/gfp.blend
+python pipeline.py build gfp                   # ~12 s: projects/gfp/gfp.blend
 python pipeline.py still gfp 165 --percent 50  # look at it
 ```
 
@@ -63,7 +63,7 @@ The agent follows [docs/workflow.md](docs/workflow.md):
 1. **Understand.** It writes a one-page brief: the one idea, structures and evidence levels, beats, look and deliverables.
 2. **Ground the science.** It fetches the PDB entries and measures the claims the film depends on.
 3. **Build** the shot from the template and `molanim`.
-4. **Inspect** stills, a preview contact sheet and motion statistics.
+4. **Inspect** stills, a preview contact sheet and motion statistics, including a consecutive run of the busiest moves.
 5. **Refine** until it reads.
 6. **Render and deliver.**
 7. **Record** what was checked and how.

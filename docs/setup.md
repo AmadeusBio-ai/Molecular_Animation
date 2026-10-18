@@ -34,7 +34,7 @@ python pipeline.py doctor
 
 ```
 python -m pytest tests                     # framework and case-study science (no Blender needed)
-python pipeline.py smoke                   # builds every shot, renders one small still each (~1 min)
+python pipeline.py smoke                   # builds every shot, renders one small still each (~70 s)
 python pipeline.py fetch channelrhodopsin  # the delivered case-study films and posters (release v0.2.0)
 python pipeline.py check channelrhodopsin  # rebuild, render frame 70 at delivery settings, compare with the poster
 ```
@@ -49,7 +49,7 @@ python pipeline.py render channelrhodopsin --overlay --take labels-01
 python pipeline.py deliver channelrhodopsin --take take-01
 ```
 
-`deliver` reads the label take from `shots.json` (`labels-03` in the original production), so point it at your own label take first. Encoding an existing take reproduces the delivered MP4 byte for byte. The WebM's decoded frames are identical, but its container IDs differ on every encode.
+`deliver` reads the label take from `shots.json` (`labels-05` for version 3), so point it at your own label take first. It writes to the delivery folder in `shots.json` (`delivery/channelrhodopsin-v3/`), replacing fetched files of the same name. Encoding an existing take reproduces the delivered MP4 byte for byte. The WebM's decoded frames are identical, but its container IDs differ on every encode.
 
 ## 4. Blender MCP (interactive work with Claude Code)
 

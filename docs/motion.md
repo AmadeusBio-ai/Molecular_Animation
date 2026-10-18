@@ -5,6 +5,8 @@ This is the motion schematic behind the films' thermal and Brownian motion. Each
 - `lipid_motion`: lipids as molecules;
 - `chain_motion`: a worm-like double helix.
 
+For a single protein or nucleic acid, `dynamics.protein_motion` packages the protein rows below (normal modes, side-chain turns, ligands riding on the residue they bond to) for any structure; the shot template uses it.
+
 The two films it was built for are the channelrhodopsin case study (`examples/channelrhodopsin/`, version 3) and ART, a film on the reverse transcriptase, RNA array and partner protein of a phage retroelement made with the same framework (not published in this repository). Their numbers are quoted below.
 
 None of it is a simulation of the molecules shown. The motion is labelled illustrative, but its amplitudes and speeds come from the sources below.
@@ -25,6 +27,7 @@ None of it is a simulation of the molecules shown. The motion is labelled illust
 4. **Size and shape set the speed.** D_t ∝ 1/r and D_r ∝ 1/r³, and elongated molecules tumble end over end far more slowly than spheres (Perrin). Crowding slows translation more than rotation.
 5. **Tether for composition, and say so.** Free molecules diffuse at their true short-time rate but are held near their editorial places by an Ornstein–Uhlenbeck tether (RMS 9 Å, 20°). Over a few seconds of film this is free diffusion; over the whole film the molecule stays in frame.
 6. **Motion never starts or stops by itself** (Jantzen et al. 2024). The one exception is a labelled timescale change: channelrhodopsin's clock stops for the "within a picosecond" twist, because on that timescale nothing else moves.
+7. **Loops repeat the physics.** With `period` (the loop's length in clock time) every process is drawn from the same spectrum on the loop's harmonics (`dynamics.periodic_ou`), so frame N + 1 equals frame 1 without any noise trick. A motion slower than the loop cannot repeat and freezes into an offset: an 8 s loop at 1 ns/s shows 8 ns, and in the template's 8 s GFP loop the median backbone RMSF is 0.09 Å.
 
 ## The schematic
 

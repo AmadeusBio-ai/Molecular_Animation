@@ -51,6 +51,7 @@ Conventions:
 | --- | --- |
 | `bilayer(bounds, protein_xyz, keep=...)` | POPC-like bilayer on a jittered hexagonal grid, with lipids clashing with the protein removed; `keep` cuts a section |
 | `occupancy(xyz, clearance)` | Fast "is this point near the protein?" test |
+| `lipid_handles(mem, rng, protein_xyz)` | Each lipid atom's pivots, weights, seed and mobility, so `groups.lipid_motion` moves lipids as molecules (annular lipids move less) |
 
 ### `molanim.particles`: ions and solvent, sparse and irregular
 
@@ -72,16 +73,15 @@ Units are Å, ns and rad. The schematic and its sources are in `docs/motion.md`.
 | `protein_motion(rng, X, resn, resi, name, chain, times, exposure, rmsf, tau, ..., period)` | The whole recipe for a protein or nucleic acid: residue-network normal modes plus side-chain turns scaled by burial. Ligands ride on the residue they bond to (whose side chain is held), other riders on the nearest node; large structures are coarsened. Returns the frame tables, mode shapes, topology and a report for `RESULT` |
 | `displacement(motion, X, f)` | Every atom's displacement on a frame, exactly as `groups.dynamics` applies it: for clearances, bond-strain and RMSF checks |
 | `exposure_factor(tau, window, shutter='box')` | How much of a motion survives exposure averaging |
-| `stokes_einstein`, `stokes_einstein_debye`, `ellipsoid`, `perrin` | Translational and rotational diffusion; Perrin prolate spheroids from a structure's second moments |
-| `rigid_brownian(rng, times, exposure, D_t, D_r, tether_t, tether_r)` | Tethered rigid-body diffusion and tumbling (per body axis) |
+| `window_mean(grid, path, times, exposure, shutter)` | The exposure average itself (box or triangle), for processes you sample yourself |
+| `stokes_einstein`, `stokes_einstein_debye`, `ellipsoid`, `perrin`, `hydrodynamic_radius`, `viscosity` | Translational and rotational diffusion; Perrin prolate spheroids from a structure's second moments; water viscosity by temperature |
+| `rigid_brownian(rng, times, exposure, D_t, D_r, tether_t, tether_r, shutter)`, `tether(D, sigma)` | Tethered rigid-body diffusion and tumbling (per body axis); the correlation time that holds a diffusing body within RMS sigma |
 | `rotation_matrix(rotvec)` | Rodrigues, batched |
 | `anm(nodes, cutoff, modes, bonded)`, `residue_nodes`, `sequence_pairs` | Anisotropic network model with stiffer sequence-neighbour springs |
 | `atom_shapes(X, vec, nodes, node_of, pairs, rigid)` | Per-atom mode shapes blended along the chain, so bonds keep their lengths to first order |
-| `mode_scale`, `mode_amplitudes`, `node_rmsf` | Calibrate to a mean RMSF; Langevin amplitudes (variance ∝ 1/λ, τ ∝ 1/λ) |
+| `mode_scale`, `mode_amplitudes(..., period)`, `node_rmsf` | Calibrate to a mean RMSF; Langevin amplitudes (variance ∝ 1/λ, τ ∝ 1/λ) |
 | `chi_topology`, `apply_chi`, `burial` | Side-chain χ1/χ2 turns about bonds (the numpy twin of `groups.dynamics`) |
 | `wlc_bend(wavelengths, persistence)`, `wlc_twist(length, persistence)` | Worm-like-chain bending bands and twist: RMS and relaxation time |
-
-`membrane.lipid_handles(mem, rng, protein_xyz)` gives each lipid atom its pivots, weights, seed and mobility for `groups.lipid_motion`. `particles.brownian` diffuses ions in reflecting boxes on the clock.
 
 ### `molanim.timeline` and `molanim.color`
 
@@ -105,11 +105,11 @@ Units are Å, ns and rad. The schematic and its sources are in `docs/motion.md`.
 | | `cycles_settings(scene, res, frames, fps, samples)` | Studio defaults: GPU, adaptive sampling, denoised, Standard view |
 | `nodes` | `G`, `new_group`, `set_modifier_inputs`, `add_nodes_modifier` | A compact geometry-node builder; modifier inputs by socket name (5.x API) |
 | `groups` | `breath(prefix, ..., loop_frames)` | Coherent sway plus jitter; exactly periodic when `loop_frames` is set. Per-atom noise: kept for old scripts; new films use `dynamics` |
-| | `molecule(prefix, breath, ...)` | Spheres for context, ball-and-stick for roles, a camera-aimed cutaway funnel, a section slab, reveal groups, glow, optional per-residue offsets |
-| | `spheres`, `frame_spheres` | Plain or frame-indexed sphere clouds (lipids, ions) |
+| | `molecule(prefix, breath_group, ..., thermal_group, space)` | Spheres for context, ball-and-stick for roles, a camera-aimed cutaway funnel, a section slab, reveal groups, glow, optional per-residue offsets. `thermal_group` (e.g. `dynamics`) moves atoms after the cuts, so no atom flickers across a cut surface; `space='RELATIVE'` for a molecule whose object tumbles |
+| | `spheres`, `frame_spheres` | Plain or frame-indexed sphere clouds (lipids, ions); `spheres` takes a `thermal_group` too |
 | | `wave_packets` | Photons as a symbol |
 | | `tube` | A cavity or pathway tube from measured and illustrative radii |
-| | `dotted_link` | An interaction marker between two atoms |
+| | `dotted_link` | An interaction marker between two atoms; with `thermal_group` it moves with the atoms it joins |
 | | `dynamics(prefix, modes_table, frames, n_modes, chi_table, n_res)` | Normal modes and side-chain turns read from frame tables (numpy knows every atom's position) |
 | | `lipid_motion(prefix, clock, motion)` | Lipids as molecules: spin, wobble, bob, rattle and a shared flow; bending chains; swinging choline |
 | | `chain_motion(prefix, clock, bend, twist)` | A double helix that bends and twists along its arc length as a worm-like chain |

@@ -2,7 +2,7 @@
 
 **Status:** delivered 2026-10-06. Rebuilt on the `molanim` framework on 2026-10-07 with identical output (see Checks). Version 2 (thermal motion, website palette) delivered 2026-10-07; version 3 (motion from physics) delivered 2026-10-18 to `delivery/channelrhodopsin-v3/` (take-04, labels-05) and published in release v0.2.0 (see the last two sections).
 
-A 21 s scientific illustration for `sources/Nobel_Med_2026.md` (generated with ChatGPT; provenance in `sources/README.md`), direction 1, "The twist that opens a pathway". The brief recommends building this shot first. A photon isomerises retinal in the channelrhodopsin C1C2, the protein rearranges (Lys132 swings to Glu129), and the cation pathway is shown first interrupted, then open in an illustrative conducting-state model. The look is the studio molecular style: atoms as spheres, a pale backdrop, shallow depth of field, a teal protein with an amber chromophore.
+A 21 s scientific illustration for `sources/Nobel_Med_2026.md` (generated with ChatGPT; provenance in `sources/README.md`), direction 1, "The twist that opens a pathway". The brief recommends building this shot first. A photon isomerises retinal in the channelrhodopsin C1C2, the protein rearranges (Lys132 swings to Glu129), and the cation pathway is shown first interrupted, then open in an illustrative conducting-state model. The look is the studio molecular style: atoms as spheres, a pale backdrop, shallow depth of field, a teal protein with an amber chromophore (navy and slate from version 2).
 
 ## What was built
 
@@ -11,6 +11,7 @@ A 21 s scientific illustration for `sources/Nobel_Med_2026.md` (generated with C
 | `channelrhodopsin.py` | Shot script. Rebuilds scene `Channelrhodopsin` (written to `channelrhodopsin.blend`) and the label scene `Channelrhodopsin_Labels` (`channelrhodopsin-labels.blend`). Timeline, camera keys, colours and label text are constants at the top. |
 | `c1c2.py` | C1C2-specific science, pure numpy (tested in `tests/test_c1c2.py`): state matching with alt-loc B and the +307 renumbering, the Schiff-base bond, the stage frame, the two-stage morph, the pathway and its sites, and the illustrative dilation. |
 | `molanim/` (framework) | mmCIF reading and assembly operators (`structure`), the constrained morph (`morph`), the pore profile (`pathway`), the procedural POPC-like bilayer (`membrane`), ion drift/transit motion and clearance (`particles`), camera paths (`timeline`), and the Blender node groups, materials, camera rig and label pass (`molanim.blender`). |
+| `molanim.dynamics`, `membrane.lipid_handles`, `groups.dynamics`, `groups.lipid_motion` (version 3) | Thermal motion from physical rates on one clock: normal modes, side-chain turns, lipids as molecules, diffusing Na⁺ (see Version 3). |
 | `tools/encode.py` | `--overlay DIR` lays an RGBA frame sequence (the label pass) over the picture. |
 | `assets/pdb/9GO1.cif`, `9GO2.cif` | C1C2 dark (2.59 Å) and light-activated (2.70 Å) SMX structures from RCSB. |
 
@@ -40,13 +41,13 @@ A 21 s scientific illustration for `sources/Nobel_Med_2026.md` (generated with C
 ## Reproduce
 
 ```
-python pipeline.py build channelrhodopsin                                  # both scenes, ~25 s
-python pipeline.py render channelrhodopsin --take take-01                  # ~2.7 h on an RTX 5060 Ti
-python pipeline.py render channelrhodopsin --overlay --take labels-01     # ~5 min
-python pipeline.py deliver channelrhodopsin --take take-01                 # set the label take in shots.json
+python pipeline.py build channelrhodopsin                                  # both scenes, ~70 s
+python pipeline.py render channelrhodopsin --take take-04                  # ~2.7 h on an RTX 5060 Ti
+python pipeline.py render channelrhodopsin --overlay --take labels-05     # ~3 min
+python pipeline.py deliver channelrhodopsin                                # the takes named in shots.json
 ```
 
-The delivered take-02 is take-01 frames 1-395 plus a re-render of 396-504 (`--frames 396-504` into a new take) after the ion-clearance and dilation fix. That fix changes nothing before the pathway opens: the re-rendered frames 396-409 match take-01 to within 1/255, with no pixel differing by more than 2. A full render from scratch gives the same picture. `labels-03` pairs with take-02 (the Na⁺ pointer follows the adjusted ion).
+These are version 3's take names, which `shots.json` names; if those folders already exist, render into new ones and update `shots.json`. In version 1 the build took about 25 s, and the delivered take-02 is take-01 frames 1-395 plus a re-render of 396-504 (`--frames 396-504` into a new take) after the ion-clearance and dilation fix. That fix changes nothing before the pathway opens: the re-rendered frames 396-409 match take-01 to within 1/255, with no pixel differing by more than 2. A full render from scratch gives the same picture. `labels-03` pairs with take-02 (the Na⁺ pointer follows the adjusted ion).
 
 ## Checks
 
@@ -177,9 +178,18 @@ The site owner found the delivered film too still: the lipids, side chains and r
   | `channelrhodopsin-clean.webm` | VP9 | 504 | 21.0 s | 15.3 MB |
 
   All are 1920×1080 at 24 fps, at the version 1 settings (CRF 16 / 24), and 16–21 % smaller than version 2: per-atom noise was costly to encode. PSNR against the PNG frames (every 24th frame): clean MP4 41.9 dB (min 40.2), clean WebM 42.2 dB (min 40.5), labelled MP4 and WebM against the take composited with the label pass 41.5 dB (min 40.0) and 41.9 dB (min 40.3). Posters (clean): `-poster-wide.png` (frame 70), `-poster-retinal.png` (204), `-poster-channel.png` (470). `pipeline.py check channelrhodopsin` rebuilt the scene and re-rendered frame 70: mean difference 0.000, max 1/255. It ran after ART's soft shutter was added to `molanim.dynamics`, which shows that the default (box) path still builds this film unchanged.
+- **README clip** (2026-10-18). `channelrhodopsin-readme.mp4` (in `delivery/channelrhodopsin-v3/`) is the labelled film encoded from take-04 and labels-05 for GitHub's 10 MB attachment limit. Version 3's motion costs more bits than version 1's stillness: CRF 21 gave 15.5 MB and CRF 23 12.6 MB, so it is a two-pass H.264 encode at 3.4 Mb/s instead: 504 frames, 21.0 s, 1920×1080, 8.89 MB. Against the PNG composite its PSNR is 42.8 dB mean and 39.6 dB minimum (frame 96) over all frames, and a decoded frame at 10 s was inspected. It replaces version 1's clip in the top-level README once uploaded as a GitHub attachment; it is not part of the release zip.
+
+  ```
+  ffmpeg -framerate 24 -i renders/channelrhodopsin/take-04/%04d.png -framerate 24 -i renders/channelrhodopsin/labels-05/%04d.png \
+    -filter_complex "[0:v][1:v]overlay=format=auto,format=yuv420p[v]" -map "[v]" \
+    -c:v libx264 -preset slow -tune film -b:v 3400k -pass 1 -an -f mp4 NUL      # NUL: /dev/null outside Windows
+  # then the same with -pass 2 -movflags +faststart delivery/channelrhodopsin-v3/channelrhodopsin-readme.mp4 as the output
+  ```
 - **Review method.** Stills, crops, frozen-camera sequences, contact sheets, motion statistics, lipid metrics, PSNR and decoded frames. The film was not watched as continuous playback in this session.
 - **Limits.**
   - Rates are literature values for POPC-like bilayers and soluble or membrane proteins, not for C1C2. The lipid axial spin D∥ varies 16-fold between papers.
   - Elastic-network modes are harmonic: no unfolding or rotamer jumps.
   - The frame follows the protein (membrane-protein drift and rotation are negligible on 19 ns).
   - The timescale beats ("microseconds", "milliseconds") are compressed time, during which the thermal motion keeps its 1 ns clock.
+- **Website** (2026-10-18). Version 3 replaces version 2 on amadeusbio.ai, encoded from take-04 and labels-05 (`docs/media.md` in the website repository, "October 2026, fifth round"). It needs about 2 dB less bitrate than version 2 for the same quality, so the web encodes use VP9 1300k / 900k and H.264 1600k / 1400k (1080 / 720) and match the version 2 web encodes at 28 % fewer bytes. Not deployed.

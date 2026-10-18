@@ -25,11 +25,11 @@ The film comes in a labelled and a clean version (1920×1080, 24 fps, MP4 + WebM
 
 ## What it demonstrates
 
-- **Evidence levels on screen.** Each beat is tagged as X-ray structure, illustrative morph or illustrative model. Timescales are labels ("within a picosecond", "microseconds", "milliseconds"), not a running clock.
+- **Evidence levels on screen.** Each beat is tagged as X-ray structure, illustrative morph or illustrative model. Timescales are labels ("within a picosecond", "microseconds", "milliseconds"), not a running counter; where the thermal motion runs, the tag states its clock ("1 s of film ≈ 1 ns").
 - **One coordinate source.** A constrained morph between deposited states is baked as absolute shape keys. Spheres, sticks and the salt-bridge marker all follow it (`molanim.morph`, `molanim.blender.mesh.absolute_keys`).
 - **Representation modes.** The camera moves from a sphere surface to ball-and-stick for the mechanism, then to a cavity tube for connectivity. Camera-aimed cutaways and a section slab replace global transparency (`molanim.blender.groups.molecule`).
 - **Data before story.** The crystal's pathway is interrupted, so the film shows that first. The opening is a labelled illustrative step (`molanim.pathway`).
-- **Honest particles.** Ions dwell irregularly at binding sites, never share a site, and keep at least 1.70 Å from every atom surface (`molanim.particles`).
+- **Honest particles.** Na⁺ in the water diffuses at its measured rate on the film's clock. Ions crossing the channel dwell irregularly at binding sites and never share a site. Every ion keeps at least 1.75 Å from every atom surface, checked against the moving protein (`molanim.particles`).
 - **Motion from physics** (version 3). One clock, 1 s of film = 1 ns: the protein moves in elastic-network normal modes, side chains turn about their bonds, lipids move as molecules, Na⁺ diffuses, all at literature rates (`molanim.dynamics`, `docs/motion.md`). Version 2's per-atom noise stretched lipid bonds by 0.6 Å and merged neighbouring molecules; `record.md` measures the difference.
 - **Separate label pass.** The labelled and clean films come from one Cycles render (`molanim.blender.labels`).
 
@@ -41,4 +41,4 @@ python pipeline.py fetch channelrhodopsin       # the delivered films and poster
 python pipeline.py check channelrhodopsin       # renders frame 70 and compares it with the delivered poster
 ```
 
-A full re-render takes about 2.7 h on an RTX 5060 Ti (128 samples, 1080p); `record.md` gives the commands. The refactor onto `molanim` was verified to reproduce the delivered pictures: posters within 1/255, label frames pixel-identical.
+A full re-render takes about 2.7 h on an RTX 5060 Ti (128 samples, 1080p); `record.md` gives the commands. The refactor onto `molanim` was verified to reproduce the delivered pictures (posters within 1/255, label frames pixel-identical), and version 3's poster still matches within 1/255 from a fresh clone of v0.2.0.

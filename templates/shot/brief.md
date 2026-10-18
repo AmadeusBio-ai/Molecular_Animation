@@ -26,6 +26,7 @@
   | --- | --- | --- |
   | | | |
 
+- **Motion:** the film's clock (1 s of film = how many ns) and what moves, with its source (`docs/motion.md`). The template's protein motion is illustrative, from measured rates.
 - **Look:** palette and accent, the representation modes, and any reference.
 
 ## Deliverables

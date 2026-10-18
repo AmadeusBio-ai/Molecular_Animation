@@ -8,7 +8,7 @@ argument-hint: <brief, source document or reference>
 
 Input: $ARGUMENTS
 
-Follow `docs/workflow.md`. It is the authority; the steps below are a checklist. Read `docs/principles.md`, `docs/framework.md` and the case study `examples/channelrhodopsin/` before planning. Use judgement: adapt the steps to the brief and record your decisions.
+Follow `docs/workflow.md`. It is the authority; the steps below are a checklist. Read `docs/principles.md`, `docs/framework.md`, `docs/motion.md` and the case study `examples/channelrhodopsin/` before planning. Use judgement: adapt the steps to the brief and record your decisions.
 
 1. **Intake.**
    - Read the brief and pick the main structure.
@@ -21,7 +21,7 @@ Follow `docs/workflow.md`. It is the authority; the steps below are a checklist.
    - Inspect chains, alt-locs, assemblies, ligands and numbering with `molanim.structure`.
    - Measure every claim the film depends on, with code: put it in a pure-numpy module next to the shot, with a test.
    - Where the data and the story disagree, show the data and label the illustrative step.
-3. **Plan in the script header.** Set the timeline, camera keys, palette and label text as constants. Add what the brief needs from `molanim`: morph, pathway, membrane, particles, more structures. The case study shows each one.
+3. **Plan in the script header.** Set the timeline, camera keys, palette and label text as constants. Add what the brief needs from `molanim`: morph, pathway, membrane, particles, more structures, and thermal motion on one clock (`docs/motion.md`; the template already moves its protein). The case study shows each one.
 4. **Build.** Run `python pipeline.py build <name>`, or `runpy` through Blender MCP. Read `RESULT`, which should report the numerical checks.
 5. **Look-dev.**
    - Run `python pipeline.py still <name> <frame> --percent 50` (add `--overlay` for labels) at each key frame, and read the PNGs.

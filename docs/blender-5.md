@@ -13,6 +13,8 @@ These were checked on Blender 5.2.2 LTS while building the shots in this repo. B
   - It must end in a `NodeGroupOutput` with an `Image` interface socket.
   - Math nodes there are `ShaderNodeMath`.
   - `CompositorNodeMaskToSDF` turns a boolean mask into a pixel-distance field, which is useful for drawing outlines of a mask.
+- **Noise Texture statistics** (measured, for calibrated motion). The RMS per axis of (Color − 0.5) is 0.0912 for 4D noise at Detail 1 and 0.1223 at Detail 0. At Detail 0 its autocorrelation falls to 1/e at a lag of 0.58 noise units, along W or in space. `molanim.blender.groups` divides by these, so its amplitudes are RMS displacements in Å and its correlation times are in clock time.
+- **Lookup tables.** Geometry nodes read per-frame data (normal-mode amplitudes, side-chain angles) from a vertex-only mesh: `Object Info` with `transform_space='ORIGINAL'`, then `Sample Index` at row (frame − 1) × items + item (`molanim.blender.mesh.table`). Float attributes hold integer indices exactly below 2²⁴.
 - **Volume-grid nodes.** `GeometryNodePointsToSDFGrid`, `SDFGridOffset`, `SDFGridMean` and `GridToMesh` are available. A negative `SDFGridOffset` distance shrinks the surface.
 - **View layers.** Objects in a collection excluded from the window's view layer are not evaluated by `scene.frame_set`. Read them through `scene.view_layers[name].depsgraph` after `depsgraph.update()`.
 - **Context.** Code run by the MCP add-on runs from a timer, where `bpy.context.window` may be `None`. Fall back to `bpy.context.window_manager.windows[0]`, and prefer the data API to `bpy.ops`.

@@ -31,7 +31,7 @@ These principles come from the case study (`examples/channelrhodopsin/`) and oth
   - chimera or mutant numbering.
 - Don't invent features. Follow each protomer's own pathway, not a pore at the dimer interface. Don't relabel an ion to fit the narration. Don't present an animated rate as physiological.
 - Show a prediction's confidence, and don't animate what it doesn't support. Draw low-confidence regions (pLDDT below 70) translucent, quote pTM/pLDDT in the evidence tag, and don't dock molecules whose complex predictions have no confident interface (the ART film's complexes had ipTM 0.07-0.24): place them apart and draw the open question as a dashed link.
-- Mark time and scale honestly. Use changing timescale labels ("within a picosecond", "microseconds", "milliseconds") rather than one running clock. Make symbols such as photons drawn as wave packets, or a blue key light, either labelled or obviously symbolic.
+- Mark time and scale honestly. Label each beat's timescale ("within a picosecond", "microseconds", "milliseconds") rather than running a time counter. Where thermal motion is shown, state the film's clock too ("1 s of film ≈ 1 ns"), and say when a beat compresses time while the thermal motion keeps its clock. Make symbols such as photons drawn as wave packets, or a blue key light, either labelled or obviously symbolic.
 
 ## 3. One coordinate source, many representations
 
@@ -65,7 +65,7 @@ This is the default look of `templates/shot/` and the case study. A brief that a
 - Add a soft key light and a restrained rim.
 
 **Colour**
-- Keep the subject muted (teal or slate protein) and give one warm accent to the hero: amber retinal.
+- Keep the subject muted (teal, navy or slate protein) and give one warm accent to the hero: amber retinal.
 - Use element colours only on the few chemically important atoms.
 - Reserve brightness and glow for the interaction that is happening now.
 
@@ -92,8 +92,9 @@ This is the default look of `templates/shot/` and the case study. A brief that a
   - Interpolate dives in log-distance, so the zoom is a steady percentage per frame (3–4 % in channelrhodopsin).
   - Hold still on the signature moment.
 - **Stochastic particles.**
-  - Ions and waters wander, dwell at sites for irregular times (5–16 frames), and never share a site.
-  - Keep them clear of atoms: every ion centre stays at least 1.70 Å from each rendered atom surface (`molanim.particles.keep_clear`).
+  - Free ions diffuse at their measured rate on the film's clock (`particles.brownian`; Na⁺ about 16 Å per film-second per axis at 1 ns/s), window-averaged because they outrun a frame.
+  - Ions passing through a channel dwell at sites for irregular times (5–16 frames) and never share a site (`particles.transits`).
+  - Keep them clear of the atoms as the atoms move: every ion centre stays at least 1.75 Å from each rendered atom surface in channelrhodopsin version 3 (`particles.keep_clear` with `moves`).
   - Never make laminar streams, evenly spaced beads, or perfectly timed hand-offs.
 - **Rigid bodies.** Check them for collisions on every frame, for example with a separating-axis test. Fix a collision in the motion (lift, shrink, re-time), not by hiding it.
 - **Velocity continuity.** Limit the per-frame step and the change of step. A pop or stop at a beat boundary reads as a mistake.
@@ -101,7 +102,7 @@ This is the default look of `templates/shot/` and the case study. A brief that a
 ## 6. Loops
 
 - A seamless loop of N frames has frame N+1 identical to frame 1. Render N+1 as the seam check and deliver N.
-- Drive everything with periodic functions of time: circles in noise space, cyclic keys, constant-speed orbits (`timeline.orbit_path`), or rotations that end on a symmetry of the object.
+- Drive everything with periodic functions of time: periodic random processes (`period=` in `molanim.dynamics`), cyclic keys, constant-speed orbits (`timeline.orbit_path`), or rotations that end on a symmetry of the object.
 - Key one frame beyond each end (frame 0 = N, frame N+2 = 2), so that motion blur and velocity are continuous across the seam.
 - Check the seam three ways:
   - evaluated geometry at 1 vs N+1 (zero);
@@ -132,7 +133,7 @@ This is the default look of `templates/shot/` and the case study. A brief that a
 
 ## 9. Rendering, takes and encoding
 
-- Look-dev stills at 50 %. Previews at 25 %, with 16 samples, every 4th frame. Finals at full resolution, with 64–128 samples, adaptive and denoised.
+- Look-dev stills at 50 %. Previews at 25 %, with 16 samples, every 4th frame, plus a consecutive run of the busiest moves. Finals at full resolution, with 64–128 samples, adaptive and denoised.
 - Render headless, never through MCP.
 - Start a new take whenever anything changes. You may splice a partial re-render only after checking that the overlapping frames are identical.
 - Choose CRFs by content.

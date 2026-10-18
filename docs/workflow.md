@@ -70,7 +70,8 @@ The constants at the top of the shot script are the storyboard. Edit them before
 - **`CAMERA`:** keys of (frame, aim, distance, azimuth, elevation, lens), with named aims resolved at build.
 - **The palette:** sRGB 0–255, muted subject and one accent.
 - **Representation scale factors.**
-- **Labels:** captions, evidence tags, timescale labels and pointers, for a labelled film.
+- **Motion:** the film's clock (1 s of film = how many ns) and the motion parameters of each molecule (`docs/motion.md`).
+- **Labels:** captions, evidence tags, timescale labels (including the clock) and pointers, for a labelled film.
 
 For a narrative science film, a good beat structure is:
 1. Establish the context (wide view, the membrane, the light arriving).
@@ -160,6 +161,6 @@ Keep `shots.json` in step with the script: fps, count, render range, label pass,
 - [ ] The shot script rebuilds the scene idempotently; `RESULT` reports the numerical checks.
 - [ ] `shots.json` describes the shot, and `pipeline.py deliver <name>` reproduces the delivery from the take.
 - [ ] Every beat has an evidence level, shown on screen in labelled films.
-- [ ] Stills, a contact sheet and motion statistics were reviewed. Loops close (seam frame = frame 1).
+- [ ] Stills, a contact sheet and motion statistics were reviewed, including a consecutive run of the busiest moves. Loops close (seam frame = frame 1).
 - [ ] `delivery/<name>/` holds MP4, WebM and posters, all verified by `encode.py`.
 - [ ] `record.md` is complete, including the review method and known limits.
