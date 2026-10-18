@@ -58,7 +58,28 @@ Conventions:
 | --- | --- |
 | `drift(rng, frames, n, amp)` | Smooth, aperiodic wandering |
 | `transits(rng, path, sites, entries, frames)` | Stop-and-go passage between binding sites, with irregular dwell times and one particle per site |
-| `keep_clear(tracks, X, need, atom_radius, offsets, weights)` | Steer tracks to keep a minimum gap from atom surfaces; reports the smallest gap and the step continuity |
+| `brownian(rng, starts, times, exposure, D, lo, hi)` | Free diffusion on the clock, reflected in boxes, exposure-averaged |
+| `keep_clear(tracks, X, need, atom_radius, offsets, weights, moves)` | Steer tracks to keep a minimum gap from atom surfaces (`moves(f)`: the atoms' thermal displacement on frame f); reports the smallest gap and the step continuity |
+
+### `molanim.dynamics`: thermal and Brownian motion from physical rates
+
+Units are Å, ns and rad. The schematic and its sources are in `docs/motion.md`.
+
+| Function | Use |
+| --- | --- |
+| `clock(frames, ns_per_frame, holds)` | Molecular time per frame and each frame's span; `holds` slow or stop it for a labelled timescale change |
+| `ou(rng, times, exposure, shape, sigma, tau, shutter='box')` | Ornstein–Uhlenbeck processes on the clock, averaged over each frame's exposure. They diffuse at short times and are tethered at long times. `shutter='triangle'` weights the window softly, so diffusing bodies change speed smoothly instead of jerking every frame |
+| `exposure_factor(tau, window, shutter='box')` | How much of a motion survives exposure averaging |
+| `stokes_einstein`, `stokes_einstein_debye`, `ellipsoid`, `perrin` | Translational and rotational diffusion; Perrin prolate spheroids from a structure's second moments |
+| `rigid_brownian(rng, times, exposure, D_t, D_r, tether_t, tether_r)` | Tethered rigid-body diffusion and tumbling (per body axis) |
+| `rotation_matrix(rotvec)` | Rodrigues, batched |
+| `anm(nodes, cutoff, modes, bonded)`, `residue_nodes`, `sequence_pairs` | Anisotropic network model with stiffer sequence-neighbour springs |
+| `atom_shapes(X, vec, nodes, node_of, pairs, rigid)` | Per-atom mode shapes blended along the chain, so bonds keep their lengths to first order |
+| `mode_scale`, `mode_amplitudes`, `node_rmsf` | Calibrate to a mean RMSF; Langevin amplitudes (variance ∝ 1/λ, τ ∝ 1/λ) |
+| `chi_topology`, `apply_chi`, `burial` | Side-chain χ1/χ2 turns about bonds (the numpy twin of `groups.dynamics`) |
+| `wlc_bend(wavelengths, persistence)`, `wlc_twist(length, persistence)` | Worm-like-chain bending bands and twist: RMS and relaxation time |
+
+`membrane.lipid_handles(mem, rng, protein_xyz)` gives each lipid atom its pivots, weights, seed and mobility for `groups.lipid_motion`. `particles.brownian` diffuses ions in reflecting boxes on the clock.
 
 ### `molanim.timeline` and `molanim.color`
 
@@ -87,10 +108,14 @@ Conventions:
 | | `wave_packets` | Photons as a symbol |
 | | `tube` | A cavity or pathway tube from measured and illustrative radii |
 | | `dotted_link` | An interaction marker between two atoms |
-| `mesh` | `points_mesh`, `frame_tracks`, `absolute_keys` | Attribute-carrying point meshes; per-frame tracks; morphs as shape keys |
+| | `dynamics(prefix, modes_table, frames, n_modes, chi_table, n_res)` | Normal modes and side-chain turns read from frame tables (numpy knows every atom's position) |
+| | `lipid_motion(prefix, clock, motion)` | Lipids as molecules: spin, wobble, bob, rattle and a shared flow; bending chains; swinging choline |
+| | `chain_motion(prefix, clock, bend, twist)` | A double helix that bends and twists along its arc length as a worm-like chain |
+| | `thermal(prefix, ...)` | Per-atom noise (version 2; kept for old scripts, not for new films) |
+| `mesh` | `points_mesh`, `frame_tracks`, `table`, `absolute_keys` | Attribute-carrying point meshes; per-frame tracks; lookup tables for geometry nodes; morphs as shape keys |
 | `look` | `attr_material`, `flat_material`, `glow_material`, `ghost_material`, `gradient_world`, `bloom` | Materials, the studio backdrop (the camera sees a gradient, objects see the ambient), bloom |
-| `rig` | `bake_camera(cam, aim, path, aperture_ratio)`, `bake_location` | Camera with tracking and proportional depth of field; controllers along keyed points |
-| `labels` | `label_pass(scene_name, prefix, spec, path, anchors, res, frames, fps, blend_path)` | The label scene: captions, evidence tags, timescales, pointers with leader lines, ink and halo switching per shot |
+| `rig` | `bake_camera(cam, aim, path, aperture_ratio)`, `bake_location`, `bake_track` | Camera with tracking and proportional depth of field; controllers along keyed points or per-frame tracks (a clock, a moving target) |
+| `labels` | `label_pass(scene_name, prefix, spec, path, anchors, res, frames, fps, blend_path)` | The label scene: captions, evidence tags, timescales, pointers with leader lines, links between two anchors (solid or dashed, optional mid text: editorial guides, hypotheses), ink and halo switching per shot |
 
 ### The controller pattern
 

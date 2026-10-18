@@ -7,6 +7,7 @@ import math
 
 import numpy as np
 
+from .dynamics import window_mean
 from .timeline import smoothstep
 
 
@@ -19,6 +20,24 @@ def drift(rng, frames, n, amp=4.0, periods=(60.0, 260.0), waves=4):
         phase = rng.uniform(0, 2 * math.pi, size=(1, n, 3))
         out += np.sin(2 * math.pi * t / period + phase) * rng.uniform(0.5, 1.0, size=(1, n, 3))
     return out * amp / math.sqrt(waves / 2)
+
+
+def brownian(rng, starts, times, exposure, D, lo, hi, substeps=8):
+    """Free diffusion of particles (D in A^2/ns per axis, e.g. Na+ in water) from `starts` (n, 3), reflected at
+    the walls of the boxes lo..hi ((n, 3) each), shown at the clock's frame `times` (ns) and averaged over each
+    frame's `exposure` (ns; molanim.dynamics.clock). Returns (frames, n, 3)."""
+    starts, lo, hi = (np.asarray(a, float) for a in (starts, lo, hi))
+    pos = np.asarray(exposure)[np.asarray(exposure) > 0]
+    h = (np.median(pos) if len(pos) else 1.0) / substeps
+    t0, t1 = times[0] - exposure[0], times[-1] + exposure[-1]
+    grid = t0 + h * np.arange(int(math.ceil((t1 - t0) / h)) + 2)
+    steps = rng.normal(scale=math.sqrt(2 * D * h), size=(len(grid), *starts.shape))
+    steps[0] = 0.0
+    free = starts + np.cumsum(steps, axis=0)
+    span = hi - lo
+    y = np.mod(free - lo, 2 * span)
+    path = lo + np.where(y > span, 2 * span - y, y)
+    return window_mean(grid, path, np.asarray(times, float), np.asarray(exposure, float))
 
 
 def transits(rng, path, sites, entries, frames, hop=(7, 12), dwell=(5, 16), approach=18, leave=26,
@@ -85,11 +104,12 @@ def transits(rng, path, sites, entries, frames, hop=(7, 12), dwell=(5, 16), appr
     return out
 
 
-def keep_clear(tracks, X, need, atom_radius, offsets=None, weights=None, decay=0.75, iterations=30):
+def keep_clear(tracks, X, need, atom_radius, offsets=None, weights=None, decay=0.75, iterations=30, moves=None):
     """Tracks (frames, n, 3) that keep `need` between each particle centre and every atom surface.
 
     Atoms sit at X + offsets * weights[frame] (e.g. residues stepping back as a channel opens; omit for
-    static atoms). Each particle carries an offset from its target track that decays every frame and is
+    static atoms); `moves(frame_index)` adds a per-frame displacement of every atom (thermal motion). Each
+    particle carries an offset from its target track that decays every frame and is
     extended only as far as needed to clear the atoms; because it starts from last frame's offset, the
     particle slides around an atom instead of snapping between sides. Until a particle first touches an
     atom its track is unchanged. Returns tracks and a report: smallest gap (A, frame, particle), largest
@@ -97,12 +117,13 @@ def keep_clear(tracks, X, need, atom_radius, offsets=None, weights=None, decay=0
     offsets = np.zeros_like(X) if offsets is None else offsets
     weights = np.zeros(len(tracks)) if weights is None else weights
     out = np.empty_like(tracks)
+    at = [X + offsets * weights[f] + (0 if moves is None else moves(f)) for f in range(len(tracks))]
     for i in range(tracks.shape[1]):
         offset = np.zeros(3)
         for f in range(len(tracks)):
             offset *= decay
             x = tracks[f, i] + offset
-            atoms = X + offsets * weights[f]
+            atoms = at[f]
             near = np.linalg.norm(atoms - x, axis=1) < need + atom_radius.max() + 3
             A, r = atoms[near], atom_radius[near]
             for _ in range(iterations if len(A) else 0):
@@ -114,7 +135,7 @@ def keep_clear(tracks, X, need, atom_radius, offsets=None, weights=None, decay=0
                 x = x + ((v / d[:, None]) * np.clip(over, 0, None)[:, None]).sum(0) * 0.6
             offset = x - tracks[f, i]
             out[f, i] = x
-    gap = min((float((np.linalg.norm(X + offsets * weights[f] - out[f, i], axis=1) - atom_radius).min()), f + 1, i)
+    gap = min((float((np.linalg.norm(at[f] - out[f, i], axis=1) - atom_radius).min()), f + 1, i)
               for f in range(len(out)) for i in range(out.shape[1]))
 
     def motion(t):

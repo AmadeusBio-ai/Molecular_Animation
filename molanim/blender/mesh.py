@@ -38,6 +38,15 @@ def frame_tracks(name, tracks, attrs, collection):
     return points_mesh(name, tracks.reshape(-1, 3), None, out, collection)
 
 
+def table(name, columns, collection):
+    """A lookup table as a vertex-only mesh (renders nothing): row k is vertex k, columns are point attributes
+    {name: (rows,) floats or (rows, 3) vectors}. Geometry nodes read it with G.sample(); per-frame tables put
+    frame f (1-based) of item i at row (f - 1) x items + i."""
+    rows = len(next(iter(columns.values())))
+    attrs = {k: ('FLOAT_VECTOR' if np.ndim(v) == 2 else 'FLOAT', v) for k, v in columns.items()}
+    return points_mesh(name, np.zeros((rows, 3)), None, attrs, collection)
+
+
 def absolute_keys(obj, snapshots):
     """Absolute shape keys: snapshot k sits at eval_time 10 k (linear between neighbours). Key the returned
     Key's eval_time to play a morph; every representation built on this mesh follows the same coordinates."""

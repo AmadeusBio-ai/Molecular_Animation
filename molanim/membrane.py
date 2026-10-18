@@ -70,18 +70,24 @@ def _rotate(v, axis, angle):
     return v * math.cos(angle) + np.cross(axis, v) * math.sin(angle) + axis * (axis @ v) * (1 - math.cos(angle))
 
 
+# Atom slots of the lipid template: phosphate, choline (turns about the phosphate), glycerol C2, the two ester
+# carbons the chains hang from, and the chains (sn-2 then sn-1, carbonyl end first).
+SLOTS = {'P': 0, 'choline': range(5, 11), 'glycerol': 12, 'ester': (15, 18), 'chains': (range(20, 37), range(37, 52))}
+
+
 def bilayer(bounds, protein_xyz, seed=0, spacing=8.6, phosphate_z=19.5, clearance=3.0, templates=48, keep=None):
     """POPC-like bilayer over `bounds` = (x0, x1, y0, y1).
 
     Lipids sit on a jittered hexagonal grid (~64 A^2 per lipid, P-P ~39 A). A lipid is dropped if its head
     group clashes with the protein; clashing tail atoms are removed individually. `keep(p_xy)` can veto
     lipids by their phosphate position (e.g. a section cut). Returns xyz, element, part ('head'/'tail'),
-    leaflet (+1 upper, -1 lower), lipid id, and the lipid count."""
+    leaflet (+1 upper, -1 lower), lipid id, slot (the atom's index in the lipid template: SLOTS) and the
+    lipid count."""
     rng = np.random.default_rng(seed)
     lib = [_lipid_template(rng) for _ in range(templates)]
     x0, x1, y0, y1 = bounds
     occ = occupancy(protein_xyz, clearance)
-    out = {k: [] for k in ('xyz', 'element', 'part', 'leaflet', 'lipid')}
+    out = {k: [] for k in ('xyz', 'element', 'part', 'leaflet', 'lipid', 'slot')}
     lipid = 0
     for leaflet in (1, -1):
         rows = np.arange(y0, y1, spacing * math.sqrt(3) / 2)
@@ -109,6 +115,7 @@ def bilayer(bounds, protein_xyz, seed=0, spacing=8.6, phosphate_z=19.5, clearanc
                 out['part'].append(part[ok])
                 out['leaflet'].append(np.full(n, leaflet))
                 out['lipid'].append(np.full(n, lipid))
+                out['slot'].append(np.nonzero(ok)[0])
                 lipid += 1
     res = {k: np.concatenate(v) for k, v in out.items()}
     res['count'] = lipid
@@ -136,3 +143,43 @@ def occupancy(xyz, clearance, voxel=1.0):
         out[inside] = grid[qi[:, 0], qi[:, 1], qi[:, 2]]
         return out
     return test
+
+
+def lipid_handles(mem, rng, protein_xyz=None, contact=(4.0, 16.0)):
+    """Per-atom handles for moving each lipid as a molecule (molanim.blender.groups.lipid_motion): its glycerol
+    'pivot', phosphate 'pivot_h', chain origin 'pivot_t' (the ester carbon of the atom's chain), 'head_w' (1 on
+    the choline), 'tail_w' (0 at the ester carbon to 1 at the chain end), 'tail_k' (chain 0 or 1), 'mol_seed'
+    (a random vector per lipid) and 'mobility': 1, falling to 0.25 for lipids whose glycerol is within
+    `contact` (A, horizontal distance) of the protein, which annular lipids hug."""
+    lipid, slot = mem['lipid'], mem['slot']
+    n_lip = int(lipid.max()) + 1
+    first = np.searchsorted(lipid, np.arange(n_lip))               # atoms are grouped by lipid, head atoms first
+
+    def at(s):
+        return mem['xyz'][first + s][lipid]                          # head slots are never dropped
+    out = {'pivot': at(SLOTS['glycerol']), 'pivot_h': at(SLOTS['P'])}
+    chain = np.full(len(slot), -1)
+    tail_w = np.zeros(len(slot))
+    for k, r in enumerate(SLOTS['chains']):
+        inside = (slot >= r.start) & (slot < r.stop)
+        chain[inside] = k
+        tail_w[inside] = (slot[inside] - r.start + 1) / len(r)
+    ester = np.where(chain == 1, SLOTS['ester'][1], SLOTS['ester'][0])
+    out['pivot_t'] = np.where((chain >= 0)[:, None], mem['xyz'][first[lipid] + ester], out['pivot'])
+    out['tail_w'], out['tail_k'] = tail_w, np.maximum(chain, 0).astype(float)
+    out['head_w'] = np.isin(slot, list(SLOTS['choline'])).astype(float)
+    out['mol_seed'] = rng.uniform(0, 1000, size=(n_lip, 3))[lipid]
+    mobility = np.ones(n_lip)
+    if protein_xyz is not None:
+        glycerol = mem['xyz'][first + SLOTS['glycerol']]
+        P = np.asarray(protein_xyz, float)
+        near_z = P[np.abs(P[:, 2]) < 30]
+        d = np.full(n_lip, np.inf)
+        for k in range(0, n_lip, 512):
+            dd = np.linalg.norm(glycerol[k:k + 512, None, :2] - near_z[None, :, :2], axis=2)
+            d[k:k + 512] = dd.min(1)
+        u = np.clip((d - contact[0]) / (contact[1] - contact[0]), 0, 1)
+        mobility = 0.25 + 0.75 * u * u * (3 - 2 * u)
+    out['mobility'] = mobility[lipid]
+    out['leaflet'] = mem['leaflet'].astype(float)
+    return out

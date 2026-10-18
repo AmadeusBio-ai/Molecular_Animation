@@ -9,7 +9,7 @@ import pipeline
 def test_discovers_the_case_study():
     s = pipeline.SHOTS['channelrhodopsin']
     assert s['script'].exists() and s['brief'].exists() and s['record'].exists()
-    assert s['count'] == 504 and s['overlay']['take'] == 'labels-03'
+    assert s['count'] == 504 and s['overlay']['take'] == 'labels-05'
 
 
 def test_new_scaffolds_a_project(tmp_path, monkeypatch):

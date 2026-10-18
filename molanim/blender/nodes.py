@@ -45,9 +45,23 @@ class G:
     def attr(self, name, kind='FLOAT'):
         return self.node('GeometryNodeInputNamedAttribute', {'Name': name}, data_type=kind).outputs['Attribute']
 
-    def loc(self, obj_socket):
-        """Location of an object input: empties used as animated controllers (x, y, z = three channels)."""
-        return self.node('GeometryNodeObjectInfo', {'Object': obj_socket}, transform_space='ORIGINAL').outputs['Location']
+    def loc(self, obj_socket, space='ORIGINAL'):
+        """Location of an object input: empties used as animated controllers (x, y, z = three channels).
+        space='RELATIVE' gives it in the modified object's own frame (for objects that move)."""
+        return self.node('GeometryNodeObjectInfo', {'Object': obj_socket}, transform_space=space).outputs['Location']
+
+    def sample(self, geo, name, index, kind='FLOAT_VECTOR'):
+        """Attribute `name` of point `index` of `geo` (a frame table: see mesh.table)."""
+        value = self.attr(name, kind) if isinstance(name, str) else name
+        return self.node('GeometryNodeSampleIndex', {'Geometry': geo, 'Value': value, 'Index': index}, data_type=kind,
+                         domain='POINT').outputs[0]
+
+    def rotate_about(self, p, pivot, rotvec):
+        """p turned about `pivot` by the rotation vector `rotvec` (axis x angle, rad)."""
+        rot = self.node('FunctionNodeAxisAngleToRotation', {'Axis': self.vec('NORMALIZE', rotvec),
+                                                            'Angle': self.vec('LENGTH', rotvec)}).outputs['Rotation']
+        v = self.node('FunctionNodeRotateVector', {'Vector': self.vec('SUBTRACT', p, pivot), 'Rotation': rot}).outputs['Vector']
+        return self.vec('ADD', pivot, v)
 
     def xyz(self, v):
         n = self.node('ShaderNodeSeparateXYZ', {'Vector': v})

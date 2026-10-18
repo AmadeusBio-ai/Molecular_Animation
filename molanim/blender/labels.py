@@ -14,6 +14,9 @@ The spec is a dict (all frames 1-based, positions in pixels from the top-left):
     pointers   [(start, end, anchor, text, (dx, dy) or None), ...]
                anchors are names in `anchors` (a stage point or a (frames, 3) track); (dx, dy) places the
                text relative to the anchor with a leader line and ring; None centres a plain region label
+    links      [(start, end, a, b, {'dashes': n, 'trim': (px, px), 'text': str, 'size': px}), ...]   (optional)
+               a line between two anchors (names, or fixed (x, y) pixel points), trimmed at both ends,
+               solid or with n dashes, with optional text at its middle: editorial guides and hypotheses
     tags_left_from  frame from which tags and timescale move to the top left (or None)
 """
 import math
@@ -152,6 +155,54 @@ def label_pass(scene_name, prefix, spec, path, anchors, res, frames, fps, blend_
         segment(f'Pin_{k:02d}_Line', u * 9, np.array([dx, -dy]) - u * 12, L['leader'], m, pivot)
         text(f'Pin_{k:02d}_Text', body, dx + (8 if dx > 0 else -8), dy, L['pointer'], m, align='LEFT' if dx > 0 else 'RIGHT',
              valign='CENTER', parent=pivot)
+    for k, (f0, f1, a, b, opts) in enumerate(spec.get('links', [])):
+        m = ink_material(f0, f1)
+        dashes, trim = opts.get('dashes', 0), opts.get('trim', (14, 14))
+        pivot = bpy.data.objects.new(f'{prefix}Link_{k:02d}', None)
+        col.objects.link(pivot)
+        me = bpy.data.meshes.new(f'{prefix}Link_{k:02d}_Line')      # unit length along +x, scaled per frame
+        w = L['leader'] / 2
+        spans = [(0.0, 1.0)] if not dashes else [(i / dashes, (i + 0.55) / dashes) for i in range(dashes)]
+        verts, faces = [], []
+        for u0, u1 in spans:
+            n0 = len(verts)
+            verts += [(u0, -w, 0), (u1, -w, 0), (u1, w, 0), (u0, w, 0)]
+            faces.append((n0, n0 + 1, n0 + 2, n0 + 3))
+        me.from_pydata(verts, [], faces)
+        me.materials.append(m)
+        line = bpy.data.objects.new(f'{prefix}Link_{k:02d}_Line', me)
+        line.parent = pivot
+        col.objects.link(line)
+        mid = None
+        if opts.get('text'):
+            mid = bpy.data.objects.new(f'{prefix}Link_{k:02d}_Mid', None)
+            col.objects.link(mid)
+            text(f'Link_{k:02d}_Text', opts['text'], 0, 0, opts.get('size', L['pointer']), m, align='CENTER', valign='CENTER',
+                 parent=mid)
+
+        def screen(anchor, f):
+            if isinstance(anchor, str):
+                _, loc, aim_pt, _, lens = path[f - 1]
+                return project(track(anchor)[f - 1], loc, aim_pt, lens, res)[0]
+            return np.asarray(anchor, float)
+        for f in range(max(1, f0 - 10), min(frames, f1 + 1) + 1):
+            pa, pb = screen(a, f), screen(b, f)
+            d = pb - pa
+            length = float(np.linalg.norm(d))
+            u = d / max(length, 1e-6)
+            pa, pb = pa + u * trim[0], pb - u * trim[1]
+            pivot.location = (pa[0], -pa[1], 0)
+            pivot.rotation_euler = (0, 0, -math.atan2(u[1], u[0]))
+            pivot.scale = (max(length - trim[0] - trim[1], 0.0), 1, 1)
+            for path_ in ('location', 'rotation_euler', 'scale'):
+                pivot.keyframe_insert(path_, frame=f)
+            if mid is not None:
+                c = (pa + pb) / 2
+                mid.location = (c[0], -c[1], 0)
+                mid.keyframe_insert('location', frame=f)
+        set_linear(pivot)
+        if mid is not None:
+            set_linear(mid)
 
     scene.render.engine = 'BLENDER_EEVEE'
     scene.eevee.taa_render_samples = L['samples']

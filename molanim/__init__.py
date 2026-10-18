@@ -5,7 +5,8 @@ Pure-numpy modules (run anywhere, unit-tested):
     morph       chemically constrained interpolation between two conformations
     pathway     HOLE-like pathway search and free-radius profiles
     membrane    procedural lipid bilayer with protein exclusion
-    particles   illustrative ion/solvent motion: drift, site-to-site transits, clearance steering
+    dynamics    thermal and Brownian motion from physical rates: clock, exposure, diffusion, normal modes
+    particles   illustrative ion/solvent motion: diffusion, drift, site-to-site transits, clearance steering
     timeline    easing, beat ramps, keyed camera paths, pinhole projection for labels
     color       exact sRGB -> linear conversion, per-atom tone variation
 
@@ -17,7 +18,7 @@ import sys
 
 __version__ = '0.1.0'
 
-_ORDER = ('color', 'timeline', 'structure', 'morph', 'pathway', 'membrane', 'particles',
+_ORDER = ('color', 'timeline', 'structure', 'morph', 'pathway', 'membrane', 'dynamics', 'particles',
           'blender.scene', 'blender.nodes', 'blender.groups', 'blender.mesh', 'blender.look', 'blender.rig',
           'blender.labels')
 

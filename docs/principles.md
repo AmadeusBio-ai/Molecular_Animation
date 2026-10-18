@@ -1,6 +1,6 @@
 # Principles
 
-These principles come from the case study (`examples/channelrhodopsin/`) and earlier productions in the same pipeline. Numbers quoted without a source are defaults that worked; numbers attributed to the case study were measured there. Apply them with judgement, not as a checklist.
+These principles come from the case study (`examples/channelrhodopsin/`) and other productions in the same pipeline, such as ART (`docs/motion.md`). Numbers quoted without a source are defaults that worked; numbers attributed to the case study were measured there. Apply them with judgement, not as a checklist.
 
 ## 1. A film explains one causal idea
 
@@ -30,6 +30,7 @@ These principles come from the case study (`examples/channelrhodopsin/`) and ear
   - crystallisation additives (drop waters and monoolein);
   - chimera or mutant numbering.
 - Don't invent features. Follow each protomer's own pathway, not a pore at the dimer interface. Don't relabel an ion to fit the narration. Don't present an animated rate as physiological.
+- Show a prediction's confidence, and don't animate what it doesn't support. Draw low-confidence regions (pLDDT below 70) translucent, quote pTM/pLDDT in the evidence tag, and don't dock molecules whose complex predictions have no confident interface (the ART film's complexes had ipTM 0.07-0.24): place them apart and draw the open question as a dashed link.
 - Mark time and scale honestly. Use changing timescale labels ("within a picosecond", "microseconds", "milliseconds") rather than one running clock. Make symbols such as photons drawn as wave packets, or a blue key light, either labelled or obviously symbolic.
 
 ## 3. One coordinate source, many representations
@@ -79,7 +80,13 @@ This is the default look of `templates/shot/` and the case study. A brief that a
 
 ## 5. Motion
 
-- **Breathing.** Sample coherent noise at (position + circle(t)). The result is spatially smooth and exactly periodic over the loop. Use a sway of a few tenths to a few Å over a large scale, plus a fine jitter below about 0.5 Å (`groups.breath`; set `loop_frames` for loops). When matching a reference, measure its motion in px per frame rather than guessing.
+- **Thermal and Brownian motion come from physics** (`docs/motion.md`, `molanim.dynamics`).
+  - Choose one clock per film (1 s of film = some ns) and run every motion on it, so small things move faster than big ones.
+  - Show each frame as an exposure average: motion faster than the window averages out.
+  - Free Brownian motion has no smooth velocity, so its window sets how it reads. Through a short box window, a tumbling molecule changes speed every frame and lurches. Use a window that holds its velocity steady for about a quarter of a second, with a soft (triangle) shutter: ART uses 16 frames.
+  - Move molecules as molecules: whole bodies diffuse and tumble at their hydrodynamic rates, residues move together in normal modes, and side chains and lipid chains turn about bonds. Never move atoms by independent noise: channelrhodopsin version 2 stretched lipid bonds by 0.6 Å (median) that way, and neighbouring lipids merged.
+  - Tether free molecules softly to their places, and say so.
+- **Breathing.** For loops and stills where no clock is wanted. Sample coherent noise at (position + circle(t)). The result is spatially smooth and exactly periodic over the loop. Use a sway of a few tenths to a few Å over a large scale, plus a fine jitter below about 0.5 Å (`groups.breath`; set `loop_frames` for loops). When matching a reference, measure its motion in px per frame rather than guessing.
 - **Camera.**
   - Use few keys, eased moves, and named aims (retinal, network, pore).
   - Interpolate dives in log-distance, so the zoom is a steady percentage per frame (3–4 % in channelrhodopsin).
@@ -150,6 +157,7 @@ This is the default look of `templates/shot/` and the case study. A brief that a
   - clearances and collisions;
   - Blender's evaluated geometry against the numpy reference;
   - silhouette IoU against a reference.
+- **Check motion on consecutive frames.** A preview every 4th frame, or a frozen-camera run every 3rd frame, cannot show a frame-scale jerk. ART take-02's lurch showed only in `pipeline.py motion` on the full take.
 - **Write down the method.** If the film was reviewed from frames and statistics and not watched as playback, say so. List the known differences from the reference and the limits of the evidence. Don't claim a match that wasn't measured.
 
 ## 11. Scripts are the source

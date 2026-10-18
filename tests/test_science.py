@@ -71,3 +71,19 @@ def test_transits_and_keep_clear():
 
 def test_radii():
     assert St.radii(['C', 'N', 'XX']).tolist() == [1.7, 1.55, 1.7]
+
+
+def test_lipid_handles_belong_to_their_lipid():
+    rng = np.random.default_rng(0)
+    protein = rng.normal(scale=6.0, size=(400, 3))
+    mem = membrane.bilayer((-40, 40, -40, 40), protein, seed=1, templates=6)
+    h = membrane.lipid_handles(mem, rng, protein)
+    for key in ('pivot', 'pivot_h', 'pivot_t'):                   # every handle lies within its own lipid
+        assert np.linalg.norm(h[key] - mem['xyz'], axis=1).max() < 30
+    p = mem['element'] == 'P'
+    assert np.allclose(h['pivot_h'][p], mem['xyz'][p])
+    assert h['tail_w'].max() == 1.0 and h['tail_w'][mem['part'] == 'head'].max() == 0.0
+    assert h['head_w'].sum() == 6 * mem['count']
+    assert 0.25 <= h['mobility'].min() < 1.0 and h['mobility'].max() == 1.0
+    same = mem['lipid'] == mem['lipid'][0]
+    assert np.ptp(h['mol_seed'][same], axis=0).max() == 0

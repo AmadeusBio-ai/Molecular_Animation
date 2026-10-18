@@ -1,4 +1,6 @@
 """Camera and controller rigs baked from per-frame paths (see molanim.timeline)."""
+import numpy as np
+
 from ..timeline import fstop_for, keyed
 from .scene import set_linear
 
@@ -28,5 +30,14 @@ def bake_location(obj, keys, points, frames):
     """Key `obj` on every frame along keys [(frame, point), ...] (named points allowed), eased between keys."""
     for f, ((a, b, u),) in keyed(keys, points, frames):
         obj.location = a * (1 - u) + b * u
+        obj.keyframe_insert('location', frame=f)
+    set_linear(obj)
+
+
+def bake_track(obj, track, start=1):
+    """Key an object's location on every frame from a (frames, 3) track, linear between frames (a moving
+    target, an anchor that follows a diffusing molecule, or a clock: x = molecular time)."""
+    for f, p in enumerate(np.asarray(track, float), start):
+        obj.location = p
         obj.keyframe_insert('location', frame=f)
     set_linear(obj)
