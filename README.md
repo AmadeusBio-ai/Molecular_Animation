@@ -11,9 +11,9 @@
 
 It is designed to be driven by an AI agent (Claude Code through Blender MCP) and works just as well by hand.
 
-https://github.com/user-attachments/assets/965c2aa4-b414-4e0d-9ee8-008a63abf73d
+https://github.com/user-attachments/assets/33a48c82-e1be-4c0d-ae49-af9d943b4180
 
-*Case study: [channelrhodopsin](examples/channelrhodopsin/), from a brief on the 2026 Nobel Prize in Physiology or Medicine. A photon twists retinal, the protein responds, and a cation pathway opens. 21 s, built from PDB 9GO1/9GO2. The clip is version 3, whose thermal motion follows measured rates ([v0.2.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.2.0)). Version 4, drawn for a white web page (cartoons, retinal's π lobes, labels exported as data), and a second film, [ART](projects/art-rna/) (an RNA-making reverse transcriptase locus of phage SA1, with AlphaFold Server predictions), are in the [v0.3.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.3.0).*
+*Case study: [channelrhodopsin](examples/channelrhodopsin/), from a brief on the 2026 Nobel Prize in Physiology or Medicine. A photon twists retinal, the protein responds, and a cation pathway opens. 21 s, built from PDB 9GO1/9GO2. This is version 4, drawn for a white web page (cartoons, retinal's π lobes, labels exported as data), with thermal motion at measured rates. It and a second film, [ART](projects/art-rna/) (an RNA-making reverse transcriptase locus of phage SA1, with AlphaFold Server predictions), are in the [v0.3.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.3.0); version 3 is in [v0.2.0](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.2.0).*
 
 ## What's inside
 
