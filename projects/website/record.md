@@ -190,6 +190,7 @@ molecule moves. Frame N + 1 equals frame 1, so a loop is frames 1..N.
 - Build reports repeat the plates' measurements (32 hydrogen bonds, 2.61-3.25 A; 7 K+; pore 0.16-6.39 A;
   histones +148 e, DNA -292 e). Takes: `renders/website/plate-loops/<shot>/take-01/` (hemoglobin: take-02),
   64 samples, adaptive 0.02, denoised, Blender 5.2.2, OptiX on the RTX 5060 Ti. To render them all (resumable):
-  `bash projects/website/render_plate_loops.sh`.
+  `bash projects/website/render_plate_loops.sh`. It reproduces the final takes; the renders above ran from two
+  local queue scripts with the same commands (take-01 for all nine, then hemoglobin take-02 after the margin check).
 - **Website:** H.264 only, CRF 23 (on these loops x264 was smaller than VP9 at equal quality); sizes, PSNR and
   tags are in the website repository's `docs/media.md`, "tenth round".
