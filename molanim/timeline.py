@@ -88,3 +88,53 @@ def project(p, loc, aim, lens, res, sensor=36.0):
 def fstop_for(aperture_ratio, lens, distance):
     """Cycles f-stop whose aperture radius is `aperture_ratio` x the focus distance (radius = focal / 2N)."""
     return (lens / 1000) / (2 * aperture_ratio * distance)
+
+
+def label_data(spec, path, anchors, res, frames, fps, levels=None, lead=10, layout=None):
+    """The label spec of a film (molanim.blender.labels.label_pass format) as plain data, for drawing the labels
+    outside the video (a web page) in sync with it: header, captions, evidence tags (with `levels`, one per tag:
+    'experimental', 'predicted', 'illustrative' or 'symbolic'), timescales, and every pointer and link with its
+    anchors projected exactly as the label pass projects them. Screen positions are fractions of the frame
+    (x from the left, y from the top), one per frame from `lead` frames before the item starts to its end;
+    'from' is the first of those frames. Frames are 1-based, as in Blender. 'shot_ink' is the spec's ink per shot
+    ([frame, 'dark' | 'light'], or None). 'layout' carries the label pass's placement hints: 'tags_left_from' (the
+    frame from which tags and timescales sit top left, or None) plus `layout`, the label pass's own overrides
+    (e.g. {'time_prefix': ''})."""
+    def track(anchor):
+        a = np.asarray(anchors[anchor], float)
+        return a if a.ndim == 2 else np.repeat(a[None], frames, 0)
+
+    def screen(anchor, f):
+        if not isinstance(anchor, str):                         # a fixed screen position in pixels
+            return np.asarray(anchor, float)
+        _, loc, aim, _, lens = path[f - 1]
+        return project(track(anchor)[f - 1], loc, aim, lens, res)[0]
+
+    def positions(anchor, f0, f1):
+        first = max(1, f0 - lead)
+        xy = [screen(anchor, f) / np.array(res, float) for f in range(first, min(frames, f1) + 1)]
+        return first, [[round(float(x), 4), round(float(y), 4)] for x, y in xy]
+
+    tags = spec.get('tags', [])
+    levels = list(levels) if levels is not None else [None] * len(tags)
+    assert len(levels) == len(tags), 'one evidence level per tag'
+    out = {
+        'fps': fps, 'frames': frames, 'width': res[0], 'height': res[1],
+        'header': None if not spec.get('header') else dict(zip(('start', 'end', 'text'), spec['header'])),
+        'captions': [dict(zip(('start', 'end', 'title', 'subtitle'), c)) for c in spec.get('captions', [])],
+        'tags': [{'start': a, 'end': b, 'text': t, 'level': lv} for (a, b, t), lv in zip(tags, levels)],
+        'times': [dict(zip(('start', 'end', 'text'), t)) for t in spec.get('times', [])],
+        'pointers': [], 'links': [], 'shot_ink': [list(s) for s in spec.get('shot_ink', [])] or None,
+        'layout': {'tags_left_from': spec.get('tags_left_from'), **(layout or {})},
+    }
+    for f0, f1, anchor, body, offset in spec.get('pointers', []):
+        first, xy = positions(anchor, f0, f1)
+        out['pointers'].append({'start': f0, 'end': f1, 'text': body, 'region': offset is None,
+                                'offset': None if offset is None else [offset[0] / res[0], offset[1] / res[1]],
+                                'from': first, 'xy': xy})
+    for f0, f1, a, b, opts in spec.get('links', []):
+        first, xa = positions(a, f0, f1)
+        _, xb = positions(b, f0, f1)
+        out['links'].append({'start': f0, 'end': f1, 'from': first, 'a': xa, 'b': xb, 'dashes': opts.get('dashes', 0),
+                             'text': opts.get('text')})
+    return out

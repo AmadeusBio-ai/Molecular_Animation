@@ -85,3 +85,62 @@ def absolute_keys(obj, snapshots):
     key.use_relative = False
     key.name = obj.name + '_Key'
     return key
+
+
+def surface_mesh(name, verts, faces, attrs=None, collection=None, smooth=True):
+    """Object from mesh arrays (e.g. molanim.cartoon builders): `verts` (n, 3), `faces` (index tuples), point
+    attributes {name: values} where (n,) arrays become FLOAT (INT if given as ('INT', values)) and (n, 3)
+    arrays FLOAT_COLOR if the name starts with 'col', FLOAT_VECTOR otherwise. Faces are shaded smooth unless smooth=False."""
+    me = bpy.data.meshes.new(name)
+    me.from_pydata([tuple(p) for p in np.asarray(verts, float)], [], [tuple(f) for f in faces])
+    for key, values in (attrs or {}).items():
+        explicit = None
+        if isinstance(values, tuple):                  # (kind, values), as dynamics_attrs() returns them
+            explicit, values = values
+        values = np.asarray(values, np.float32)
+        if values.ndim == 2:
+            kind = explicit or ('FLOAT_COLOR' if key.startswith('col') else 'FLOAT_VECTOR')
+            a = me.attributes.new(key, kind, 'POINT')
+            if kind == 'FLOAT_COLOR':
+                a.data.foreach_set('color', np.hstack([values, np.ones((len(values), 1), np.float32)]).ravel())
+            else:
+                a.data.foreach_set('vector', values.ravel())
+        elif explicit == 'INT':
+            me.attributes.new(key, 'INT', 'POINT').data.foreach_set('value', values.astype(np.int32))
+        else:
+            me.attributes.new(key, 'FLOAT', 'POINT').data.foreach_set('value', values)
+    me.polygons.foreach_set('use_smooth', [smooth] * len(me.polygons))
+    me.update()
+    obj = bpy.data.objects.new(name, me)
+    if collection is not None:
+        collection.objects.link(obj)
+    return obj
+
+
+def realize(obj, name=None, collection=None):
+    """A plain mesh object holding the evaluated geometry of `obj` (modifiers applied, e.g. a node-built
+    surface), so numpy can work on its vertices. The source object is left untouched."""
+    dg = bpy.context.evaluated_depsgraph_get()
+    me = bpy.data.meshes.new_from_object(obj.evaluated_get(dg), preserve_all_data_layers=True, depsgraph=dg)
+    me.name = name or obj.name + '_Mesh'
+    out = bpy.data.objects.new(me.name, me)
+    out.matrix_world = obj.matrix_world.copy()
+    if collection is not None:
+        collection.objects.link(out)
+    return out
+
+
+def vertices(obj):
+    """(n, 3) vertex positions of a mesh object, in its local frame."""
+    v = np.empty(len(obj.data.vertices) * 3, np.float32)
+    obj.data.vertices.foreach_get('co', v)
+    return v.reshape(-1, 3).astype(float)
+
+
+def set_point_colors(obj, name, rgb):
+    """Write (n, 3) linear colours to the point attribute `name` (FLOAT_COLOR) of a mesh object."""
+    me = obj.data
+    a = me.attributes.get(name) or me.attributes.new(name, 'FLOAT_COLOR', 'POINT')
+    rgb = np.asarray(rgb, np.float32)
+    a.data.foreach_set('color', np.hstack([rgb, np.ones((len(rgb), 1), np.float32)]).ravel())
+    me.update()

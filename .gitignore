@@ -21,3 +21,12 @@ desktop.ini
 
 # Local Claude Code settings
 .claude/settings.local.json
+
+# AlphaFold Server output: subject to its Output Terms of Use and not redistributed here; the rendered films carry
+# the notice (projects/art-rna/sources/README.md, projects/website/record.md). The p53 job request stays.
+projects/art-rna/af3/
+projects/website/af3/*
+!projects/website/af3/p53-tetramer-p21.json
+# The owner's hand-over folder for the ART project (brief, job package, AlphaFold results). What the project
+# uses is copied into projects/art-rna/sources/.
+CRISPR-Like/

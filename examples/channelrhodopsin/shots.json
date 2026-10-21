@@ -16,6 +16,22 @@
       "posters": {"channelrhodopsin-poster-wide.png": 70, "channelrhodopsin-poster-retinal.png": 204,
                   "channelrhodopsin-poster-channel.png": 470},
       "release": {"tag": "v0.2.0", "asset": "channelrhodopsin-delivery.zip"}
+    },
+    "channelrhodopsin-v4": {
+      "title": "Channelrhodopsin: the twist that opens a pathway (version 4, website-native)",
+      "brief": "brief.md",
+      "record": "record.md",
+      "script": "channelrhodopsin_v4.py",
+      "blend": "channelrhodopsin-v4.blend",
+      "fps": 24, "count": 504, "loop": false, "render": "1-504",
+      "take": "take-01",
+      "overlay": {"blend": "channelrhodopsin-v4-labels.blend", "take": "labels-02"},
+      "delivery": "delivery/channelrhodopsin-v4",
+      "outputs": [{"name": "channelrhodopsin-v4", "overlay": true}, {"name": "channelrhodopsin-v4-clean"}],
+      "crf": [16, 24],
+      "posters": {"channelrhodopsin-v4-poster-wide.png": 70, "channelrhodopsin-v4-poster-retinal.png": 204,
+                  "channelrhodopsin-v4-poster-channel.png": 470},
+      "release": {"tag": "v0.3.0", "asset": "channelrhodopsin-v4-delivery.zip"}
     }
   }
 }

@@ -79,6 +79,30 @@ def item(lines, key):
     return ''
 
 
+def loop(lines, category):
+    """Rows of an mmCIF loop (e.g. '_struct_conf', '_struct_sheet_range') as dicts of strings; [] if the file has
+    no such loop. A category written as single items (one row, no loop_) is returned as one row."""
+    prefix = category + '.'
+    k = next((n for n, line in enumerate(lines) if line.startswith(prefix)), None)
+    if k is None:
+        return []
+    looped = k > 0 and lines[k - 1].strip() == 'loop_'
+    keys, values = [], []
+    while k < len(lines) and lines[k].startswith(prefix):
+        parts = lines[k][len(prefix):].split(None, 1)
+        keys.append(parts[0])
+        if not looped:
+            values.append(' '.join(_split(parts[1])) if len(parts) > 1 else '')
+        k += 1
+    if not looped:
+        return [dict(zip(keys, values))]
+    tokens = []
+    while k < len(lines) and not lines[k].startswith(('#', 'loop_', '_')):
+        tokens += _split(lines[k])
+        k += 1
+    return [dict(zip(keys, tokens[n:n + len(keys)])) for n in range(0, len(tokens) - len(keys) + 1, len(keys))]
+
+
 def title(lines):
     """The entry's title (_struct.title)."""
     return item(lines, '_struct.title')
@@ -196,8 +220,9 @@ def find(table, name, resi=None, resn=None, chain=None):
 # ----------------------------------------------------------------------------- topology
 
 def bonds(table, xyz=None, links=(), residue=None):
-    """Covalent bonds (i, j) with i < j, sorted: by distance within residues, peptide bonds, disulfides,
-    plus explicit `links` (pairs of atom indices, e.g. a ligand's covalent attachment).
+    """Covalent bonds (i, j) with i < j, sorted: by distance within residues, peptide bonds, nucleic-acid
+    phosphodiester bonds (O3' to the next P), disulfides, plus explicit `links` (pairs of atom indices, e.g. a
+    ligand's covalent attachment).
 
     `residue` is an integer key per atom identifying its residue (default: from chain, resi and resn)."""
     xyz = np.asarray(table['xyz'] if xyz is None else xyz, float)
@@ -211,8 +236,11 @@ def bonds(table, xyz=None, links=(), residue=None):
     limit = np.where((el[i] == 'S') | (el[j] == 'S'), 1.95, 1.75)
     peptide = (((name[i] == 'C') & (name[j] == 'N') & (resi[j] - resi[i] == 1)) |
                ((name[j] == 'C') & (name[i] == 'N') & (resi[i] - resi[j] == 1)))
+    # Nucleic acids: the phosphodiester bond from O3' of one nucleotide to P of the next.
+    phosphodiester = (((name[i] == "O3'") & (name[j] == 'P') & (resi[j] - resi[i] == 1)) |
+                      ((name[j] == "O3'") & (name[i] == 'P') & (resi[i] - resi[j] == 1)))
     disulfide = (name[i] == 'SG') & (name[j] == 'SG')
-    bonded = (((residue[i] == residue[j]) | peptide) & (d < limit)) | disulfide
+    bonded = (((residue[i] == residue[j]) | peptide | phosphodiester) & (d < limit)) | disulfide
     edges = set(zip(i[bonded].tolist(), j[bonded].tolist()))
     edges |= {(min(a, b), max(a, b)) for a, b in links}
     return np.array(sorted(edges), dtype=int).reshape(-1, 2)

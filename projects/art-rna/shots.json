@@ -1,0 +1,36 @@
+{
+  "_about": "How this project's films are made; read by pipeline.py. Paths are relative to this folder, except 'delivery' (relative to the repo root). 'take' is the delivered take under renders/<shot>/.",
+  "shots": {
+    "art-rna": {
+      "title": "ART: a hidden repertoire of RNA",
+      "brief": "brief.md",
+      "record": "record.md",
+      "script": "art_rna.py",
+      "blend": "art-rna.blend",
+      "fps": 24, "count": 744, "loop": false, "render": "1-744",
+      "take": "take-03",
+      "overlay": {"blend": "art-rna-labels.blend", "take": "labels-03"},
+      "delivery": "delivery/art-rna-v2",
+      "outputs": [{"name": "art-rna", "overlay": true}, {"name": "art-rna-clean"}],
+      "crf": [16, 24],
+      "posters": {"art-rna-poster-repeat.png": 72, "art-rna-poster-rnas.png": 360, "art-rna-poster-yadd.png": 540,
+                  "art-rna-poster-question.png": 720}
+    },
+    "art-rna-v3": {
+      "title": "ART: a hidden repertoire of RNA (version 3, website-native)",
+      "brief": "brief.md",
+      "record": "record.md",
+      "script": "art_rna_v3.py",
+      "blend": "art-rna-v3.blend",
+      "fps": 24, "count": 744, "loop": false, "render": "1-744",
+      "take": "take-01",
+      "overlay": {"blend": "art-rna-v3-labels.blend", "take": "labels-01"},
+      "delivery": "delivery/art-rna-v3",
+      "outputs": [{"name": "art-rna-v3", "overlay": true}, {"name": "art-rna-v3-clean"}],
+      "crf": [16, 24],
+      "posters": {"art-rna-v3-poster-repeat.png": 72, "art-rna-v3-poster-rnas.png": 360, "art-rna-v3-poster-yadd.png": 540,
+                  "art-rna-v3-poster-question.png": 720},
+      "release": {"tag": "v0.3.0", "asset": "art-rna-v3-delivery.zip"}
+    }
+  }
+}

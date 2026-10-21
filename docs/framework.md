@@ -60,7 +60,7 @@ Conventions:
 | `drift(rng, frames, n, amp)` | Smooth, aperiodic wandering |
 | `transits(rng, path, sites, entries, frames)` | Stop-and-go passage between binding sites, with irregular dwell times and one particle per site |
 | `brownian(rng, starts, times, exposure, D, lo, hi)` | Free diffusion on the clock, reflected in boxes, exposure-averaged |
-| `keep_clear(tracks, X, need, atom_radius, offsets, weights, moves)` | Steer tracks to keep a minimum gap from atom surfaces (`moves(f)`: the atoms' thermal displacement on frame f); reports the smallest gap and the step continuity |
+| `keep_clear(tracks, X, need, atom_radius, offsets, weights, moves, drop_below)` | Steer tracks to keep a minimum gap from atom surfaces (`moves(f)`: the atoms' thermal displacement on frame f); reports the smallest gap and the step continuity. `drop_below` leaves out a particle wedged where it cannot clear (reported as `dropped`) |
 
 ### `molanim.dynamics`: thermal and Brownian motion from physical rates
 
@@ -92,8 +92,35 @@ Units are Å, ns and rad. The schematic and its sources are in `docs/motion.md`.
 | `orbit_path(aim, distance, elevation, lens, frames)` | A constant-speed orbit that closes exactly (loops) |
 | `keyed(keys, points, frames)` | Generic eased keys with named points |
 | `project(p, loc, aim, lens, res)` | 3D → pixel, for label anchors |
+| `label_data(spec, path, anchors, res, frames, fps, levels)` | A film's labels as plain data for a web page that draws them over the clean film: header, captions, evidence tags with their level, timescales, and every pointer and link with its anchors projected on each frame exactly as the label pass projects them (fractions of the frame), plus layout hints |
 | `fstop_for(ratio, lens, distance)` | Depth of field as a fraction of the focus distance |
 | `color.srgb`, `lin`, `shade(rng, ramp, n)`, `tile`, `hex_rgb` | Exact sRGB → linear; per-atom tone variation |
+
+### `molanim.cartoon`: folds as cartoons, nucleic acids as ladders
+
+Builders return plain mesh arrays `(vertices, faces, attributes)` for `mesh.surface_mesh`.
+
+| Function | Use |
+| --- | --- |
+| `secondary_structure(lines, table)` | Per-atom H / E / C from the deposited `_struct_conf` and `_struct_sheet_range` (author chain and number) |
+| `estimate_secondary_structure(ca, partners)` | H / E / C from Calpha geometry for models without an annotation: two consecutive i, i+3 / i, i+4 turns make a helix; extended residues paired 4.2-5.6 A across a sheet make a strand. On mainly helical deposited proteins it recovers 90-93 % of helices; strands 84-93 % (1EMA, 1IGT); short helices in beta proteins are missed |
+| `protein_segments(table, ss, gap, min_residues)` | Continuous Calpha traces with carbonyls, split at chain breaks |
+| `ribbon(segment, k)`, `cartoon(table, ss, per_atom)` | Richardson cartoons: a Catmull-Rom backbone through the Calphas whose width follows the peptide C=O, so helix ribbons face out from their axis and strands lie in their sheet; strand arrowheads on each strand's last residue; coil tubes. `per_atom` samples attributes (a colour, a pLDDT, normal-mode shapes) at each vertex's residue; `ring` numbers the cross-sections, for cuts that remove whole sections |
+| `ladder(table)`, `nucleotides(table)` | A tube per strand through the P atoms, each base as a slab cut from its own ring atoms (so pairing, stacking and tilt are the measured ones), a rod from C4' through C1' to the base |
+| `ring_fills(table)` | Sugar and base rings as thin plates over a stick model (the 'fill' style of molecular viewers); attributes `part`, `base`, `nt`, `plate` |
+| `sticks(xyz, edges, radius)`, `sweep`, `catmull_rom`, `plane`, `combine` | Half-bonds for ball-and-stick; the tube sweep and spline underneath; best-fit planes |
+
+### `molanim.electro`: electrons, drawn for what they are
+
+| Function | Use |
+| --- | --- |
+| `formal_charges(table)` | Formal charges at neutral pH: Lys, Arg +1; Asp, Glu -1; chain termini; -1 per nucleic-acid phosphate; heme propionates; monatomic ions |
+| `potential(points, xyz, q)` | Coulombic potential (kcal/(mol e)) with a distance-dependent dielectric of 4r, as UCSF ChimeraX's `coulombic` command; an estimate for pictures, not Poisson-Boltzmann |
+| `potential_colors(phi, limit)` | Red (negative) - white - blue (positive), saturating at +-10, ChimeraX's defaults |
+| `pi_chain_lobes(xyz, offset)` | Lobes along a conjugated chain that need not be flat (retinal's polyene): a normal per atom from its two chain bonds, so the lobes split where a bond twists (conjugation broken) and report the twist per bond |
+| `pi_systems(table)`, `pi_lobes(xyz, offset)` | Planar conjugated groups (aromatic side chains, nucleobases, heme porphyrin, the GFP chromophore) and two lobes per group, one on each face: the shared, delocalised pi electrons that resonance describes, in place of alternating double bonds |
+
+The van der Waals envelope (`groups.envelope`) stands for the outer edge of the electron cloud: the usual size of a molecule is its 0.001 e/bohr^3 density contour, and radii there match van der Waals radii to about 0.2 A (sources in `docs/depiction-sources.md`). Colour it by `potential` where electrostatics is the point (DNA on histones, a cation-selective pore), and keep emission for what really emits light (a fluorescent chromophore).
 
 ## Blender layer (`molanim.blender`)
 
@@ -110,13 +137,19 @@ Units are Å, ns and rad. The schematic and its sources are in `docs/motion.md`.
 | | `wave_packets` | Photons as a symbol |
 | | `tube` | A cavity or pathway tube from measured and illustrative radii |
 | | `dotted_link` | An interaction marker between two atoms; with `thermal_group` it moves with the atoms it joins |
+| | `envelope(prefix, voxel, smooth, offset)` | Points with a `radius` -> the surface of their union (SDF grid, smoothed): the van der Waals envelope, or pi lobes from `electro.pi_lobes` / `pi_chain_lobes` |
+| | `section(prefix, space, group)` | `molecule()`'s funnel and slab for meshes (cartoons, sticks, surfaces): deletes what the cuts remove; `group='ring'` removes whole ribbon cross-sections, so cut ends are clean. Put it before the motion modifier |
+| | `offset_by(prefix, attribute)` | Points move by a vector attribute x Control.y (an illustrative opening, for meshes) |
+| | `ball_stick(prefix, stick, fill)`, `plates(prefix)` | Nucleic acids (or any molecule) atom by atom: a ball per atom and a stick per bond edge, morphing continuously to space-filling as Detail.x goes 1 -> 0 (a camera pulling back until bonds are sub-pixel), appearing atom by atom on Show.x; ring plates that grow and drop out with them |
 | | `dynamics(prefix, modes_table, frames, n_modes, chi_table, n_res)` | Normal modes and side-chain turns read from frame tables (numpy knows every atom's position) |
 | | `lipid_motion(prefix, clock, motion)` | Lipids as molecules: spin, wobble, bob, rattle and a shared flow; bending chains; swinging choline |
 | | `chain_motion(prefix, clock, bend, twist)` | A double helix that bends and twists along its arc length as a worm-like chain |
 | | `thermal(prefix, ...)` | Per-atom noise (version 2; kept for old scripts, not for new films) |
 | `mesh` | `points_mesh`, `frame_tracks`, `table`, `absolute_keys` | Attribute-carrying point meshes; per-frame tracks; lookup tables for geometry nodes; morphs as shape keys |
+| | `surface_mesh(name, verts, faces, attrs)` (`('INT', values)` for integer attributes), `realize(obj)`, `vertices(obj)`, `set_point_colors(obj, name, rgb)` | Objects from `cartoon` arrays; a node-built surface baked to a mesh so numpy can colour its vertices (e.g. by `electro.potential`) |
 | | `dynamics_tables(prefix, motion, collection, loop)`, `dynamics_attrs(motion, idx, turns)` | Frame tables and per-atom attributes for `groups.dynamics` from `dynamics.protein_motion` (a loop's last row repeats frame 1) |
 | `look` | `attr_material`, `flat_material`, `glow_material`, `ghost_material`, `gradient_world`, `bloom` | Materials, the studio backdrop (the camera sees a gradient, objects see the ambient), bloom |
+| | `ribbon_material(alpha)`, `skin_material(opacity, edge, rgb)`, `fluorescence_material(rgb, strength)` | Satin cartoons from the `col` attribute (opacity from an attribute with `alpha`, e.g. low-confidence predictions; `attr_material` takes it too); a translucent skin that is denser at its silhouette and does not glow; a skin that emits, only for a real fluorophore |
 | `rig` | `bake_camera(cam, aim, path, aperture_ratio)`, `bake_location`, `bake_track` | Camera with tracking and proportional depth of field; controllers along keyed points or per-frame tracks (a clock, a moving target) |
 | `labels` | `label_pass(scene_name, prefix, spec, path, anchors, res, frames, fps, blend_path)` | The label scene: captions, evidence tags, timescales, pointers with leader lines, links between two anchors (solid or dashed, optional mid text: editorial guides, hypotheses), ink and halo switching per shot |
 

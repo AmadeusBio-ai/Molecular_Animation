@@ -1,0 +1,6 @@
+PASS: 29 jobs, 19 distinct compositions; component and individual files agree.
+PASS: Server JSON subset, alphabets, string seeds, counts and unique names.
+PASS: 501-aa RT and 265-aa partner exactly match their genomic CDS translations.
+PASS: four RNA windows (212, 171, 201, 176 nt), genomic coordinates and SHA-256 hashes.
+PASS: largest job has 978 polymer residues/nucleotides.
+NOT TESTED: server-side acceptance, native transcript ends, biological binding or function.

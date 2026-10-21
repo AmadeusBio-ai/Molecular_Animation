@@ -1,0 +1,34 @@
+[
+  {
+    "name": "p53 tetramer on the p21 response element",
+    "modelSeeds": [],
+    "sequences": [
+      {
+        "proteinChain": {
+          "sequence": "MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD",
+          "count": 4
+        }
+      },
+      {
+        "dnaSequence": {
+          "sequence": "GAACATGTCCCAACATGTTG",
+          "count": 1
+        }
+      },
+      {
+        "dnaSequence": {
+          "sequence": "CAACATGTTGGGACATGTTC",
+          "count": 1
+        }
+      },
+      {
+        "ion": {
+          "ion": "ZN",
+          "count": 4
+        }
+      }
+    ],
+    "dialect": "alphafoldserver",
+    "version": 1
+  }
+]

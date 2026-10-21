@@ -67,6 +67,16 @@ def test_transits_and_keep_clear():
     atom = np.array([[0.4, 0.0, 0.0]])
     clear, report = particles.keep_clear(tracks, atom, need=1.7, atom_radius=np.array([1.0]))
     assert report['min_gap'][0] >= 1.7 - 0.05
+    assert 'dropped' not in report and clear.shape == tracks.shape
+
+
+def test_keep_clear_drops_a_wedged_particle():
+    # A particle held between two atoms that leave it no room: pushed both ways, it cannot clear them.
+    tracks = np.zeros((20, 2, 3))
+    tracks[:, 1] = [0.0, 0.0, 30.0]                                  # the second one is far from both
+    atoms = np.array([[-1.5, 0.0, 0.0], [1.5, 0.0, 0.0]])
+    clear, report = particles.keep_clear(tracks, atoms, need=1.7, atom_radius=np.array([1.0, 1.0]), drop_below=1.6)
+    assert report['dropped'] == [0] and clear.shape == (20, 1, 3) and report['min_gap'][0] > 20
 
 
 def test_radii():

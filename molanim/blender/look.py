@@ -10,9 +10,20 @@ def _nodes(m):
     return m.node_tree
 
 
-def attr_material(name, roughness=0.45, specular=0.4, sheen=0.0, emission_tint=0.4):
+def _alpha(m, attribute):
+    """Opacity of the Principled BSDF from a point attribute (0 clear - 1 solid), e.g. low-confidence parts of a
+    prediction drawn translucent."""
+    nt = m.node_tree
+    a = nt.nodes.new('ShaderNodeAttribute')
+    a.attribute_type, a.attribute_name = 'GEOMETRY', attribute
+    a.location = (-700, -500)
+    nt.links.new(a.outputs['Fac'], nt.nodes['Principled BSDF'].inputs['Alpha'])
+    m.surface_render_method = 'DITHERED'
+
+
+def attr_material(name, roughness=0.45, specular=0.4, sheen=0.0, emission_tint=0.4, alpha=None):
     """Base colour from the 'col' attribute; emission strength from 'emit' (colour tinted toward warm white).
-    Pairs with groups.molecule(), which stores both per atom."""
+    Pairs with groups.molecule(), which stores both per atom. `alpha` names an opacity attribute (optional)."""
     m = bpy.data.materials.new(name)
     nt = _nodes(m)
     p = nt.nodes['Principled BSDF']
@@ -33,6 +44,8 @@ def attr_material(name, roughness=0.45, specular=0.4, sheen=0.0, emission_tint=0
     nt.links.new(next(s for s in tint.outputs if s.identifier == 'Result_Color'), p.inputs['Emission Color'])
     nt.links.new(emit.outputs['Fac'], p.inputs['Emission Strength'])
     col.location, emit.location, tint.location = (-700, 200), (-700, -250), (-400, -100)
+    if alpha:
+        _alpha(m, alpha)
     return m
 
 
@@ -133,3 +146,62 @@ def bloom(scene, name, threshold=1.0, strength=0.55, size=0.55, quality='High'):
     scene.compositing_node_group = ng
     scene.render.use_compositing = True
     return ng
+
+
+def ribbon_material(name, roughness=0.38, coat=0.35, subsurface=0.08, alpha=None):
+    """Cartoons and ladders: base colour from the 'col' point attribute; a satin plastic with a light clear coat,
+    so folds read by their shading rather than by outlines. `alpha` names an opacity attribute (optional)."""
+    m = bpy.data.materials.new(name)
+    nt = _nodes(m)
+    p = nt.nodes['Principled BSDF']
+    for k, v in (('Roughness', roughness), ('Coat Weight', coat), ('Coat Roughness', 0.15),
+                 ('Subsurface Weight', subsurface), ('Specular IOR Level', 0.45)):
+        p.inputs[k].default_value = v
+    col = nt.nodes.new('ShaderNodeAttribute')
+    col.attribute_type, col.attribute_name = 'GEOMETRY', 'col'
+    nt.links.new(col.outputs['Color'], p.inputs['Base Color'])
+    col.location = (-400, 200)
+    if alpha:
+        _alpha(m, alpha)
+    return m
+
+
+def skin_material(name, opacity=0.18, edge=0.6, rgb=None):
+    """A translucent skin (the van der Waals envelope, a pi lobe): colour from the 'col' point attribute (e.g. an
+    electrostatic potential) or a fixed sRGB `rgb`; `opacity` where the skin faces the camera, rising to `edge`
+    at its silhouette, so the shape reads on white without hiding what is inside. No emission: it does not glow."""
+    m = bpy.data.materials.new(name)
+    nt = _nodes(m)
+    out = nt.nodes['Material Output']
+    p = nt.nodes['Principled BSDF']
+    p.inputs['Roughness'].default_value = 0.45
+    p.inputs['Specular IOR Level'].default_value = 0.3
+    if rgb is None:
+        col = nt.nodes.new('ShaderNodeAttribute')
+        col.attribute_type, col.attribute_name = 'GEOMETRY', 'col'
+        nt.links.new(col.outputs['Color'], p.inputs['Base Color'])
+    else:
+        p.inputs['Base Color'].default_value = (*lin(rgb), 1)
+    lw = nt.nodes.new('ShaderNodeLayerWeight')
+    lw.inputs['Blend'].default_value = 0.4
+    ramp = nt.nodes.new('ShaderNodeMapRange')
+    ramp.interpolation_type = 'SMOOTHSTEP'
+    ramp.inputs['From Min'].default_value, ramp.inputs['From Max'].default_value = 0.2, 1.0
+    ramp.inputs['To Min'].default_value, ramp.inputs['To Max'].default_value = opacity, edge
+    clear, mix = nt.nodes.new('ShaderNodeBsdfTransparent'), nt.nodes.new('ShaderNodeMixShader')
+    nt.links.new(lw.outputs['Facing'], ramp.inputs['Value'])
+    nt.links.new(ramp.outputs['Result'], mix.inputs[0])
+    nt.links.new(clear.outputs[0], mix.inputs[1])
+    nt.links.new(p.outputs[0], mix.inputs[2])
+    nt.links.new(mix.outputs[0], out.inputs['Surface'])
+    return m
+
+
+def fluorescence_material(name, rgb, strength, opacity=0.5):
+    """A translucent skin that emits light of its own colour: only for something that really fluoresces (the GFP
+    chromophore emits green light). Returns (material, emission strength socket)."""
+    m = skin_material(name, opacity=opacity, edge=min(1.0, opacity + 0.3), rgb=rgb)
+    p = m.node_tree.nodes['Principled BSDF']
+    p.inputs['Emission Color'].default_value = (*lin(rgb), 1)
+    p.inputs['Emission Strength'].default_value = strength
+    return m, p.inputs['Emission Strength']

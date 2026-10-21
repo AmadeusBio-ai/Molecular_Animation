@@ -13,14 +13,15 @@ It is designed to be driven by an AI agent (Claude Code through Blender MCP) and
 
 https://github.com/user-attachments/assets/965c2aa4-b414-4e0d-9ee8-008a63abf73d
 
-*Case study: [channelrhodopsin](examples/channelrhodopsin/), from a brief on the 2026 Nobel Prize in Physiology or Medicine. A photon twists retinal, the protein responds, and a cation pathway opens. 21 s, built from PDB 9GO1/9GO2. This is version 3, whose thermal motion follows measured rates. Full-quality labelled and clean films are in the [v0.2.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.2.0).*
+*Case study: [channelrhodopsin](examples/channelrhodopsin/), from a brief on the 2026 Nobel Prize in Physiology or Medicine. A photon twists retinal, the protein responds, and a cation pathway opens. 21 s, built from PDB 9GO1/9GO2. The clip is version 3, whose thermal motion follows measured rates ([v0.2.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.2.0)). Version 4, drawn for a white web page (cartoons, retinal's π lobes, labels exported as data), and a second film, [ART](projects/art-rna/) (an RNA-making reverse transcriptase locus of phage SA1, with AlphaFold Server predictions), are in the [v0.3.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.3.0).*
 
 ## What's inside
 
 - **`molanim`, the framework.**
   - A pure-numpy science layer: mmCIF and assemblies, atom-matched states, constrained morphs, pathway profiles, procedural membranes, ion diffusion and transits, camera paths. It is unit-tested and runs anywhere.
   - Thermal and Brownian motion from physics ([docs/motion.md](docs/motion.md)): one clock per film, exposure-averaged frames, and molecules that move as molecules (hydrodynamic tumbling and diffusion, elastic-network normal modes, side-chain turns about bonds, lipids as bodies, worm-like DNA), at rates from the literature. Loops repeat exactly.
-  - A Blender layer: sphere and ball-and-stick molecules with camera-aimed cutaways, cavity tubes, interaction markers, a studio look, a depth-of-field camera rig, and a separate label pass for captions, evidence tags, pointers and links.
+  - Depictions that stand for something physical ([docs/depiction-sources.md](docs/depiction-sources.md)): protein cartoons from the deposited secondary structure, nucleic acids atom by atom, van der Waals envelopes coloured by Coulombic potential, and π lobes over conjugated systems (`molanim.cartoon`, `molanim.electro`).
+  - A Blender layer: sphere and ball-and-stick molecules with camera-aimed cutaways, cavity tubes, interaction markers, a studio look, a depth-of-field camera rig, and a separate label pass for captions, evidence tags, pointers and links. The same labels can be exported as data (`timeline.label_data`) for a web page to draw over the clean film.
 - **`pipeline.py`.** One command line for the whole production: `new` → `build` → `still` → `preview` → `render` → `deliver`, plus `doctor`, `motion` (jump and seam detection, on stepped previews and consecutive runs), `smoke` and `check` (re-render a poster frame and compare it with the delivery).
 - **A workflow and principles** for films that are both beautiful and scientifically honest: [docs/workflow.md](docs/workflow.md), [docs/principles.md](docs/principles.md), [docs/motion.md](docs/motion.md).
 - **An agent guide** ([AGENTS.md](AGENTS.md)) and a `/new-film` skill for Claude Code.
@@ -85,7 +86,7 @@ docs/                 workflow, principles, motion schematic, framework API, set
 AGENTS.md, CLAUDE.md  agent guide; .claude/skills/new-film is the /new-film skill
 ```
 
-`renders/`, `delivery/` and `.blend` files are build products and are ignored by git. The case study's delivered films are in the [v0.2.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.2.0) (version 1 in [v0.1.0](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.1.0)); get them with `python pipeline.py fetch channelrhodopsin`.
+`renders/`, `delivery/` and `.blend` files are build products and are ignored by git. The delivered films are in the releases: [v0.3.0](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.3.0) has channelrhodopsin version 4 and ART version 3 (`python pipeline.py fetch channelrhodopsin-v4`, `... fetch art-rna-v3`), [v0.2.0](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.2.0) has version 3 (`python pipeline.py fetch channelrhodopsin`) and [v0.1.0](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.1.0) version 1. The AlphaFold Server models behind the ART film are not distributed (AlphaFold Server Output Terms of Use); the film's delivery carries the terms.
 
 ## Reproducibility
 

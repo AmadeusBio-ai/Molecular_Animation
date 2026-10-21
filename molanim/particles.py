@@ -104,7 +104,8 @@ def transits(rng, path, sites, entries, frames, hop=(7, 12), dwell=(5, 16), appr
     return out
 
 
-def keep_clear(tracks, X, need, atom_radius, offsets=None, weights=None, decay=0.75, iterations=30, moves=None):
+def keep_clear(tracks, X, need, atom_radius, offsets=None, weights=None, decay=0.75, iterations=30, moves=None,
+               drop_below=None):
     """Tracks (frames, n, 3) that keep `need` between each particle centre and every atom surface.
 
     Atoms sit at X + offsets * weights[frame] (e.g. residues stepping back as a channel opens; omit for
@@ -113,7 +114,9 @@ def keep_clear(tracks, X, need, atom_radius, offsets=None, weights=None, decay=0
     extended only as far as needed to clear the atoms; because it starts from last frame's offset, the
     particle slides around an atom instead of snapping between sides. Until a particle first touches an
     atom its track is unchanged. Returns tracks and a report: smallest gap (A, frame, particle), largest
-    step and change of step (after and before)."""
+    step and change of step (after and before). With `drop_below` (A), particles whose gap ever stays below it
+    (one wedged in a crevice, pushed both ways at once) are left out of the returned tracks; the report then
+    lists them as 'dropped' (indices into the input) and its gap is over the particles kept."""
     offsets = np.zeros_like(X) if offsets is None else offsets
     weights = np.zeros(len(tracks)) if weights is None else weights
     out = np.empty_like(tracks)
@@ -135,11 +138,18 @@ def keep_clear(tracks, X, need, atom_radius, offsets=None, weights=None, decay=0
                 x = x + ((v / d[:, None]) * np.clip(over, 0, None)[:, None]).sum(0) * 0.6
             offset = x - tracks[f, i]
             out[f, i] = x
-    gap = min((float((np.linalg.norm(at[f] - out[f, i], axis=1) - atom_radius).min()), f + 1, i)
-              for f in range(len(out)) for i in range(out.shape[1]))
+    gaps = [min((float((np.linalg.norm(at[f] - out[f, i], axis=1) - atom_radius).min()), f + 1, i)
+                for f in range(len(out))) for i in range(out.shape[1])]
+    keep = [i for i in range(out.shape[1]) if drop_below is None or gaps[i][0] >= drop_below]
+    gap = min(gaps[i] for i in keep)
+    dropped = sorted(set(range(out.shape[1])) - set(keep))
+    out, tracks = out[:, keep], tracks[:, keep]
 
     def motion(t):
         steps = np.linalg.norm(np.diff(t, axis=0), axis=2)
         return round(float(steps.max()), 2), round(float(np.abs(np.diff(steps, axis=0)).max()), 2)
-    return out, {'min_gap': (round(gap[0], 2), gap[1], gap[2]), 'max_step_and_change_after': motion(out),
-                 'before': motion(tracks)}
+    report = {'min_gap': (round(gap[0], 2), gap[1], gap[2]), 'max_step_and_change_after': motion(out),
+              'before': motion(tracks)}
+    if drop_below is not None:
+        report['dropped'] = dropped
+    return out, report

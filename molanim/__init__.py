@@ -9,6 +9,8 @@ Pure-numpy modules (run anywhere, unit-tested):
     particles   illustrative ion/solvent motion: diffusion, drift, site-to-site transits, clearance steering
     timeline    easing, beat ramps, keyed camera paths, pinhole projection for labels
     color       exact sRGB -> linear conversion, per-atom tone variation
+    cartoon     protein ribbons from secondary structure, nucleic-acid ladders (mesh arrays)
+    electro     formal charges, Coulombic potential, pi systems and their lobes
 
 Blender modules (import inside Blender 5.x only): molanim.blender.*
     scene, nodes, groups, mesh, look, rig, labels
@@ -16,9 +18,10 @@ Blender modules (import inside Blender 5.x only): molanim.blender.*
 import importlib
 import sys
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
-_ORDER = ('color', 'timeline', 'structure', 'morph', 'pathway', 'membrane', 'dynamics', 'particles',
+_ORDER = ('color', 'timeline', 'structure', 'cartoon', 'electro', 'morph', 'pathway', 'membrane', 'dynamics',
+          'particles',
           'blender.scene', 'blender.nodes', 'blender.groups', 'blender.mesh', 'blender.look', 'blender.rig',
           'blender.labels')
 

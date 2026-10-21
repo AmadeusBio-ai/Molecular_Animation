@@ -341,6 +341,62 @@ def spheres(prefix, breath_group=None, sway=0.6, jitter=0.18, name='Lipids', the
     return ng
 
 
+def _grow(g, show):
+    """0 -> 1 as Show.x goes 0 -> 1, each point at its own moment ('u' in 0-1): a dissolve, not a sequence."""
+    x, _, _ = g.xyz(g.loc(show))
+    return g.smooth(g.math('SUBTRACT', g.math('MULTIPLY', x, 1.6), g.math('MULTIPLY', g.attr('u'), 0.6)), 0.0, 1.0)
+
+
+def ball_stick(prefix, stick=0.16, fill=0.7, resolution=8, name='BallStick'):
+    """Atoms and their bonds (a points mesh with bond edges) drawn atom by atom: a ball per atom ('vdw' x 'ball')
+    and a stick per bond, coloured by 'col' (and 'alpha' if the material reads it). Detail.x morphs the drawing
+    continuously from ball-and-stick (1) to space-filling atoms at `fill` x van der Waals (0), for a camera that
+    pulls back until single bonds would be smaller than a pixel; the atoms stay where they are. Show.x makes the
+    atoms appear, each at its own moment ('u' in 0-1). Run motion (chain_motion, dynamics) as earlier modifiers."""
+    ng, g, gin, gout = new_group(prefix + name, [('Material', 'NodeSocketMaterial', None), ('Detail', 'NodeSocketObject', None),
+                                                 ('Show', 'NodeSocketObject', None), ('Stick', 'NodeSocketFloat', stick),
+                                                 ('Fill', 'NodeSocketFloat', fill)])
+    I = gin.outputs
+    detail, _, _ = g.xyz(g.loc(I['Detail']))
+    grow = _grow(g, I['Show'])
+    scale = g.math('ADD', I['Fill'], g.math('MULTIPLY', detail, g.math('SUBTRACT', g.attr('ball'), I['Fill'])))
+    geo = g.store(I['Geometry'], 'radius', g.math('MULTIPLY', g.math('MULTIPLY', g.attr('vdw'), scale), grow))
+    geo = g.store(geo, 'sr', g.math('MULTIPLY', g.math('MULTIPLY', I['Stick'], detail), grow))
+    points = g.node('GeometryNodeMeshToPoints', {'Mesh': geo, 'Selection': g.math('GREATER_THAN', g.attr('radius'), 0.02),
+                                                 'Radius': g.attr('radius')}, mode='VERTICES').outputs['Points']
+    edge_sr = g.node('GeometryNodeFieldOnDomain', {'Value': g.attr('sr')}, domain='EDGE', data_type='FLOAT').outputs[0]
+    curve = g.node('GeometryNodeMeshToCurve', {'Mesh': geo, 'Selection': g.math('GREATER_THAN', edge_sr, 0.005)},
+                   mode='EDGES').outputs['Curve']
+    profile = g.node('GeometryNodeCurvePrimitiveCircle', {'Resolution': resolution, 'Radius': 1.0}, mode='RADIUS').outputs['Curve']
+    sticks = g.node('GeometryNodeCurveToMesh', {'Curve': curve, 'Profile Curve': profile, 'Scale': g.attr('sr')}).outputs['Mesh']
+    sticks = g.node('GeometryNodeSetShadeSmooth', {'Geometry': sticks}).outputs['Mesh']
+    join = g.node('GeometryNodeJoinGeometry')
+    g.put(sticks, join.inputs[0])
+    g.put(points, join.inputs[0])
+    g.put(g.material(join.outputs[0], I['Material']), gout.inputs['Geometry'])
+    return ng
+
+
+def plates(prefix, name='Plates'):
+    """Ring plates (molanim.cartoon.ring_fills) that go with ball_stick(): they grow about their own centre
+    ('centre' vector attribute) on the same Show controller and per-plate 'u', and are dropped while Detail.x is
+    near 0 (inside space-filling atoms they would not be seen). Material reads 'col' (and 'alpha')."""
+    ng, g, gin, gout = new_group(prefix + name, [('Material', 'NodeSocketMaterial', None), ('Detail', 'NodeSocketObject', None),
+                                                 ('Show', 'NodeSocketObject', None)])
+    I = gin.outputs
+    detail, _, _ = g.xyz(g.loc(I['Detail']))
+    grow = _grow(g, I['Show'])
+    pos = g.node('GeometryNodeInputPosition').outputs['Position']
+    c = g.attr('centre', 'FLOAT_VECTOR')
+    p = g.vec('ADD', c, g.vec('SCALE', g.vec('SUBTRACT', pos, c), scale=grow))
+    geo = g.node('GeometryNodeSetPosition', {'Geometry': I['Geometry'], 'Position': p}).outputs['Geometry']
+    gone = g.math('MAXIMUM', g.math('LESS_THAN', detail, 0.05), g.math('LESS_THAN', grow, 0.02))
+    geo = g.node('GeometryNodeDeleteGeometry', {'Geometry': geo, 'Selection': g.math('GREATER_THAN', gone, 0.5)},
+                 domain='POINT', mode='ALL').outputs['Geometry']
+    g.put(g.material(geo, I['Material']), gout.inputs['Geometry'])
+    return ng
+
+
 def frame_spheres(prefix, name='Ions'):
     """Frame-indexed tracks (mesh.frame_tracks) -> spheres ('radius' attribute) for the current frame."""
     ng, g, gin, gout = new_group(prefix + name, [('Material', 'NodeSocketMaterial', None)])
@@ -421,4 +477,72 @@ def dotted_link(prefix, breath_group, dots=7, bead=0.17, name='Bridge', thermal_
     pts = g.node('GeometryNodeMeshToPoints', {'Mesh': line, 'Radius': g.math('MULTIPLY', I['Bead'], show),
                                               'Selection': g.math('GREATER_THAN', show, 0.01)}, mode='VERTICES').outputs['Points']
     g.put(g.material(pts, I['Material']), gout.inputs['Geometry'])
+    return ng
+
+
+def section(prefix, name='Section', space='ORIGINAL', group=None):
+    """The cuts of molecule() for meshes (cartoons, sticks, surfaces): a camera-aimed funnel toward Target and a
+    section slab facing the camera through Slab, read from the same controllers (Cut = (funnel open, slab open,
+    -)). Instead of shrinking atoms, it deletes the mesh points (and their faces) that the cuts remove, so
+    ribbons and envelopes open the same way sphere models do. space='RELATIVE' for objects that move.
+    `group` names an integer point attribute (e.g. a ribbon's cross-section, molanim.cartoon) whose groups go
+    whole: a cross-section is removed if any of its points is, so cuts end cleanly instead of in notches."""
+    ng, g, gin, gout = new_group(prefix + name, [
+        ('Camera', 'NodeSocketObject', None), ('Target', 'NodeSocketObject', None), ('Slab', 'NodeSocketObject', None),
+        ('Cut', 'NodeSocketObject', None), ('Cut Enable', 'NodeSocketFloat', 1.0), ('Funnel', 'NodeSocketFloat', 9.0),
+        ('Slope', 'NodeSocketFloat', 0.5), ('Back', 'NodeSocketFloat', 6.0), ('Slab Reach', 'NodeSocketFloat', 45.0)])
+    I = gin.outputs
+    pos = g.node('GeometryNodeInputPosition').outputs['Position']
+    cam, tgt, slab = g.loc(I['Camera'], space), g.loc(I['Target'], space), g.loc(I['Slab'], space)
+    cut, slab_amt, _ = g.xyz(g.loc(I['Cut']))
+    a = g.vec('NORMALIZE', g.vec('SUBTRACT', cam, tgt))
+    v = g.vec('SUBTRACT', pos, tgt)
+    along = g.vec('DOT_PRODUCT', v, a)
+    perp = g.vec('LENGTH', g.vec('SUBTRACT', v, g.vec('SCALE', a, scale=along)))
+    radius = g.math('MULTIPLY', g.math('ADD', I['Funnel'], g.math('MULTIPLY', I['Slope'], g.math('MAXIMUM', along, 0.0))), cut)
+    in_funnel = g.math('MULTIPLY', g.math('LESS_THAN', perp, radius), g.math('GREATER_THAN', along, g.math('MULTIPLY', I['Back'], -1.0)))
+    n = g.vec('NORMALIZE', g.vec('MULTIPLY', g.vec('SUBTRACT', cam, slab), (1.0, 1.0, 0.0)))
+    depth = g.vec('DOT_PRODUCT', g.vec('SUBTRACT', pos, slab), n)
+    offset = g.math('MULTIPLY', g.math('SUBTRACT', 1.0, slab_amt), I['Slab Reach'])
+    in_slab = g.math('MULTIPLY', g.math('GREATER_THAN', depth, offset), g.math('GREATER_THAN', slab_amt, 0.001))
+    remove = g.math('MULTIPLY', g.math('MAXIMUM', in_funnel, in_slab), g.math('GREATER_THAN', I['Cut Enable'], 0.5))
+    if group is not None:
+        remove = g.node('GeometryNodeAccumulateField', {'Value': remove, 'Group ID': g.attr(group, 'INT')},
+                        data_type='FLOAT', domain='POINT').outputs['Total']
+    geo = g.node('GeometryNodeDeleteGeometry', {'Geometry': I['Geometry'], 'Selection': g.math('GREATER_THAN', remove, 0.5)},
+                 domain='POINT', mode='ALL').outputs['Geometry']
+    g.put(geo, gout.inputs['Geometry'])
+    return ng
+
+
+def offset_by(prefix, attribute='dilate', name='Offset'):
+    """Points move by the vector attribute `attribute` times Control.y (molecule()'s 'Path Control' dilation, for
+    meshes): an illustrative opening keyed on one controller."""
+    ng, g, gin, gout = new_group(prefix + name, [('Control', 'NodeSocketObject', None)])
+    I = gin.outputs
+    _, amount, _ = g.xyz(g.loc(I['Control']))
+    geo = g.node('GeometryNodeSetPosition', {'Geometry': I['Geometry'],
+                                            'Offset': g.vec('SCALE', g.attr(attribute, 'FLOAT_VECTOR'), scale=amount)}).outputs['Geometry']
+    g.put(geo, gout.inputs['Geometry'])
+    return ng
+
+
+def envelope(prefix, voxel=0.5, smooth=2, offset=0.0, name='Envelope'):
+    """Points with a 'radius' attribute (e.g. van der Waals radii) -> the surface of their union, as a mesh: the
+    van der Waals envelope, which approximates the outer edge of the electron cloud (see molanim.electro).
+    `smooth` Laplacian passes round the seams between spheres; `offset` (A) grows or shrinks the surface. The
+    same group draws pi lobes from molanim.electro.pi_lobes() points."""
+    ng, g, gin, gout = new_group(prefix + name, [('Material', 'NodeSocketMaterial', None),
+                                                 ('Voxel', 'NodeSocketFloat', voxel), ('Smooth', 'NodeSocketInt', smooth),
+                                                 ('Offset', 'NodeSocketFloat', offset)])
+    I = gin.outputs
+    pts = g.node('GeometryNodeMeshToPoints', {'Mesh': I['Geometry'], 'Radius': g.attr('radius')},
+                 mode='VERTICES').outputs['Points']
+    sdf = g.node('GeometryNodePointsToSDFGrid', {'Points': pts, 'Radius': g.attr('radius'),
+                                                 'Voxel Size': I['Voxel']}).outputs[0]
+    sdf = g.node('GeometryNodeSDFGridOffset', {'Grid': sdf, 'Distance': I['Offset']}).outputs[0]
+    sdf = g.node('GeometryNodeSDFGridLaplacian', {'Grid': sdf, 'Iterations': I['Smooth']}).outputs[0]
+    shell = g.node('GeometryNodeGridToMesh', {'Grid': sdf, 'Threshold': 0.0, 'Adaptivity': 0.0}).outputs['Mesh']
+    shell = g.node('GeometryNodeSetShadeSmooth', {'Geometry': shell}).outputs['Mesh']
+    g.put(g.material(shell, I['Material']), gout.inputs['Geometry'])
     return ng

@@ -1,0 +1,810 @@
+{
+  "created_date": "2026-10-07",
+  "project": "SA1 ART scientific illustration and molecular animation",
+  "dialect": "alphafoldserver",
+  "version": 1,
+  "schema_reference": "https://github.com/google-deepmind/alphafold/blob/main/server/README.md",
+  "submitted_to_server": false,
+  "validation_status": "Local JSON/schema-subset, sequence-alphabet, length, coordinate, translation, job-uniqueness and batch-consistency checks only; not server-side acceptance.",
+  "total_jobs": 29,
+  "distinct_molecular_compositions": 19,
+  "maximum_polymer_residue_count": 978,
+  "seed_design": {
+    "base_seed": "101",
+    "additional_seeds": [
+      "202",
+      "303"
+    ],
+    "scope": "RT-partner binary and all four ternary hypotheses only. Seeds probe model variability; they are not dynamics or independently validated states."
+  },
+  "source_record": {
+    "accession": "MW218148.1",
+    "original_record_date": "03-FEB-2021",
+    "retrieval": "Archived GenBank flatfile retrieved through GitHub connector; not a fresh NCBI download.",
+    "repository": "https://github.com/forresthu/artmine",
+    "commit": "4d72381142519fc4ead259a94f37896b4d1baaf5",
+    "genbank_git_blob_sha": "e796e06c76c3f65ce8563c5826179dae0d39e74f",
+    "url": "https://github.com/forresthu/artmine/blob/4d72381142519fc4ead259a94f37896b4d1baaf5/data/groundtruth/MW218148.1.gb"
+  },
+  "paper_access_limitation": "The linked PDF could not be fully retrieved in this session. No exact author-supplied transcript sequences, mature RNA endpoints, or supplementary AF inputs were verified. RNA inputs below are explicitly our genomic-window modeling choices.",
+  "paper_url": "https://www-cdn.anthropic.com/22573675ada52a8ca8a97a1a4b4326b2f208a071.pdf",
+  "repeat_motif_search": {
+    "core": "ATATGAATACGTAT",
+    "tract_start_1based": 9448,
+    "tract_end_1based_inclusive": 10646,
+    "selected_near_match_starts_1based": [
+      9598,
+      9810,
+      9981,
+      10182,
+      10358
+    ],
+    "maximum_hamming_distance": 1,
+    "terminal_interval_omitted": "No next motif boundary was available after 10358; no fifth mature RNA endpoint was invented."
+  },
+  "assets": {
+    "SA1_RT": {
+      "entity_type": "proteinChain",
+      "sequence": "MFKFNKVNNLKMIGENEIHNDLMLERMMFVMKPVFRRLEKNNKGKLVMLFSDGRKNYLLSTSDKRYYSSPLLSYEGDEYKELESASYIESNIDSLKLLKVKISDILSDNQNIRIRKNLMFTVYEDVDDIKLVQLLTRGDKKIQSAFNIENVISISKDKIKLDDFNLIKDLLNHYIIKGIKDVYISNTIKLLIEALELKYSGKKAFDTFYIPKSDGTKREINSPIEEIRPILKEQSKILNAILKFRIDKYKLDENIIAYREGKSIKDNASLHKENKVIIKFDISKFFDNCHIDYWKENLFFHFKEDEDLMDRLMKEFEGFLFRKDNKGLYMGSPLSPSASNLIMVPVMRYISNILKKFKTDIKVSIYADDLTFSSKVINDEFNAKRLKNMVNHAFKANGLDFKLKEEKSLVMVNNKRKITGLTVNHRDEVTISQKRYRQLRTVIHLLSNGVEFKNIKGFNTELELVSLINYYLDVDTTGKVRRLISRNERAFNELKRKSEVK",
+      "length": 501,
+      "accession": "QPI16926.1",
+      "genome_accession": "MW218148.1",
+      "genomic_start_1based": 10647,
+      "genomic_end_1based_inclusive": 12152,
+      "strand": "+",
+      "original_genbank_product": "hypothetical protein",
+      "role": "ART reverse-transcriptase candidate",
+      "sequence_status": "Native annotated protein sequence; coding DNA independently translated and matched exactly.",
+      "role_status": "ART-family assignment follows the public ART locus replication; GenBank itself labels the product hypothetical protein.",
+      "motif_annotation": {
+        "sequence": "YADD",
+        "protein_start_1based": 366,
+        "protein_end_1based_inclusive": 369,
+        "status": "Sequence feature only; does not establish catalytic activity."
+      },
+      "source_url": "https://github.com/forresthu/artmine/blob/4d72381142519fc4ead259a94f37896b4d1baaf5/data/groundtruth/MW218148.1.gb",
+      "sequence_sha256": "e240825724f65fa85bb9e7133c72cb7ccb5223fc2efc38869dd9f3e0e62ee4c7"
+    },
+    "SA1_PARTNER": {
+      "entity_type": "proteinChain",
+      "sequence": "MLSVKKRKIITDLFYYNTGLIEDIIEEIGYGELDDDLFESALNSLDNKHSVKCINYLNVNGQKELLRNILEKSYSDNYFNKYYLISRYREYKMFVNHYNRSEENRINDLMSIGYYYGRLELTIDLFRFYEKNTFDIDFLLITLYGIDYYNKHKDTISGLNLSTNLPTLRNLIINTANRFHESGEIDKEGLLEYINGEMKEYFEALFRIFNERNIMVDDDLYLFLYKANYSKIRNFIHLIDKGEIEIYSHILDEYEDYLPTKIMIY",
+      "length": 265,
+      "accession": "QPI16927.1",
+      "genome_accession": "MW218148.1",
+      "genomic_start_1based": 12154,
+      "genomic_end_1based_inclusive": 12951,
+      "strand": "+",
+      "original_genbank_product": "hypothetical protein",
+      "role": "Immediately downstream candidate ART partner",
+      "sequence_status": "Native annotated protein sequence; coding DNA independently translated and matched exactly.",
+      "role_status": "Genomic association is not proof of direct binding, function, or native oligomeric state.",
+      "source_url": "https://github.com/forresthu/artmine/blob/4d72381142519fc4ead259a94f37896b4d1baaf5/data/groundtruth/MW218148.1.gb",
+      "sequence_sha256": "0cfc87f02b5664ca54af2280a7866366c7c1b2654a9dfddd203f3d51dff4964e"
+    },
+    "SA1_RNA_W1": {
+      "entity_type": "rnaSequence",
+      "sequence": "AUAUGUAUACGUAUGAUAUAAUUGUAGUAUAAUCGAUUUCUAGAUAUUAAUACGAUCCACCAGAUUCCUUUCUUACGAAAAAGAAUCCUUUGGAUCCAUUUAACAUCUUGUUUGGUUUAAUAUUACUAUGAUUAAUUAUCUUCAUUUAUGUUGUUUGUUUAUUUUCUAAUUAAGUUGUUGUAAAGAUAUAUCUCAUAUUAUUUGAGGUGAAU",
+      "length": 212,
+      "genome_accession": "MW218148.1",
+      "genomic_start_1based": 9598,
+      "genomic_end_1based_inclusive": 9809,
+      "strand": "+",
+      "native_transcript_endpoints_verified": false,
+      "sequence_status": "Exploratory genomic-window RNA, not an experimentally delimited mature transcript.",
+      "boundary_rule": "From the start of one 14-nt near-conserved motif to the base immediately before the next motif start.",
+      "transformation": "Positive-strand genomic DNA copied verbatim, with T replaced by U; no substitutions, tags, or chemical modifications.",
+      "start_motif_dna": "ATATGTATACGTAT",
+      "source_url": "https://github.com/forresthu/artmine/blob/4d72381142519fc4ead259a94f37896b4d1baaf5/data/groundtruth/MW218148.1.gb",
+      "sequence_sha256": "963ceb9586d60ccffb48529832cf147b63b288d22a4b457b6f8b34c519e6ee72"
+    },
+    "SA1_RNA_W2": {
+      "entity_type": "rnaSequence",
+      "sequence": "AUAUGAAUACGUAUAUUCUUUAUUUAUCUAUCACCACUUUCAUGAUUAAAUCUGGCCUUCCAUGAGGCUGAUUCUUAACAGAUACACCCUCUGGAAGCCAUAUCUUCAUCAUGUUGUUUACAAUAACAAUUUUUAUCUUAAAGAUAUUCUAUAAUUAAUUUUAUAGACAUU",
+      "length": 171,
+      "genome_accession": "MW218148.1",
+      "genomic_start_1based": 9810,
+      "genomic_end_1based_inclusive": 9980,
+      "strand": "+",
+      "native_transcript_endpoints_verified": false,
+      "sequence_status": "Exploratory genomic-window RNA, not an experimentally delimited mature transcript.",
+      "boundary_rule": "From the start of one 14-nt near-conserved motif to the base immediately before the next motif start.",
+      "transformation": "Positive-strand genomic DNA copied verbatim, with T replaced by U; no substitutions, tags, or chemical modifications.",
+      "start_motif_dna": "ATATGAATACGTAT",
+      "source_url": "https://github.com/forresthu/artmine/blob/4d72381142519fc4ead259a94f37896b4d1baaf5/data/groundtruth/MW218148.1.gb",
+      "sequence_sha256": "05d4c519007639d85a4821744690b77325f3d1a1ab059d56b6f736c08e12c281"
+    },
+    "SA1_RNA_W3": {
+      "entity_type": "rnaSequence",
+      "sequence": "AUAUGAAUACGUAUAAUGAAUUAAUACGGGUAGUCUAAAAUUGUCAGAUUCGGAGAAUCCUACAAUUUUACUAUUCUGUACAGCAGCUCUGGCGCUAAAUGAUUGACAUGAUUUAGCCCAUCAGCUGCUCGUCACACACUUGUUUGUUUAAGAUAAAAAGAAAUGAAUUAAAGAUAUUCUAUAAUUAAGUUUAUAGACAUU",
+      "length": 201,
+      "genome_accession": "MW218148.1",
+      "genomic_start_1based": 9981,
+      "genomic_end_1based_inclusive": 10181,
+      "strand": "+",
+      "native_transcript_endpoints_verified": false,
+      "sequence_status": "Exploratory genomic-window RNA, not an experimentally delimited mature transcript.",
+      "boundary_rule": "From the start of one 14-nt near-conserved motif to the base immediately before the next motif start.",
+      "transformation": "Positive-strand genomic DNA copied verbatim, with T replaced by U; no substitutions, tags, or chemical modifications.",
+      "start_motif_dna": "ATATGAATACGTAT",
+      "source_url": "https://github.com/forresthu/artmine/blob/4d72381142519fc4ead259a94f37896b4d1baaf5/data/groundtruth/MW218148.1.gb",
+      "sequence_sha256": "b4646c833bd6628a52f78ba2ef3afb03a7a00506ab12e05e77654c5f0d2456d8"
+    },
+    "SA1_RNA_W4": {
+      "entity_type": "rnaSequence",
+      "sequence": "AUAUGAAUACGUAUAAUGAUUUUCUAUGUACCACCACAUUCAUAAUUCGAGCAUUCCCAGCCGGUAACUCCUUCUUUUAAUAAAGCAGAAGAAUCCGGCGGGAAUUCAGUCAAAUUAUAUUUGUUUAAUUCAUUUAUUUCUCUAUUAGAUAUUCUAUAAUUAAUUUUAUAGACAUU",
+      "length": 176,
+      "genome_accession": "MW218148.1",
+      "genomic_start_1based": 10182,
+      "genomic_end_1based_inclusive": 10357,
+      "strand": "+",
+      "native_transcript_endpoints_verified": false,
+      "sequence_status": "Exploratory genomic-window RNA, not an experimentally delimited mature transcript.",
+      "boundary_rule": "From the start of one 14-nt near-conserved motif to the base immediately before the next motif start.",
+      "transformation": "Positive-strand genomic DNA copied verbatim, with T replaced by U; no substitutions, tags, or chemical modifications.",
+      "start_motif_dna": "ATATGAATACGTAT",
+      "source_url": "https://github.com/forresthu/artmine/blob/4d72381142519fc4ead259a94f37896b4d1baaf5/data/groundtruth/MW218148.1.gb",
+      "sequence_sha256": "28c5d5e60054f785a8f17dfee43cbc12408eba5488847aed85436b12b768672f"
+    }
+  },
+  "compositions": [
+    {
+      "composition_id": "01",
+      "label": "RT_QPI16926",
+      "asset_ids": [
+        "SA1_RT"
+      ],
+      "purpose": "Full-length RT illustration asset.",
+      "evidence_status": "Predicted fold of a native sequence; monomer input does not establish a native monomeric state.",
+      "input_stoichiometry": "RT:1",
+      "polymer_residue_count": 501
+    },
+    {
+      "composition_id": "02",
+      "label": "PARTNER_QPI16927",
+      "asset_ids": [
+        "SA1_PARTNER"
+      ],
+      "purpose": "Full-length candidate-partner illustration asset.",
+      "evidence_status": "Predicted fold of a native sequence; monomer input does not establish a native monomeric state.",
+      "input_stoichiometry": "Partner:1",
+      "polymer_residue_count": 265
+    },
+    {
+      "composition_id": "03",
+      "label": "HYP_RT_PARTNER_1to1",
+      "asset_ids": [
+        "SA1_RT",
+        "SA1_PARTNER"
+      ],
+      "purpose": "Assess a candidate RT-partner arrangement for a clearly labeled hypothesis shot.",
+      "evidence_status": "Unvalidated protein-protein interaction and stoichiometry; not a proven ART complex.",
+      "input_stoichiometry": "RT:1, Partner:1",
+      "polymer_residue_count": 766
+    },
+    {
+      "composition_id": "04",
+      "label": "EXPL_RNA_W1_9598_9809",
+      "asset_ids": [
+        "SA1_RNA_W1"
+      ],
+      "purpose": "Candidate RNA-repertoire illustration; compare local fold confidence and topology.",
+      "evidence_status": "Exploratory genomic window; mature transcript endpoints and native fold unknown.",
+      "input_stoichiometry": "RNA:1",
+      "polymer_residue_count": 212
+    },
+    {
+      "composition_id": "05",
+      "label": "EXPL_RNA_W2_9810_9980",
+      "asset_ids": [
+        "SA1_RNA_W2"
+      ],
+      "purpose": "Candidate RNA-repertoire illustration; compare local fold confidence and topology.",
+      "evidence_status": "Exploratory genomic window; mature transcript endpoints and native fold unknown.",
+      "input_stoichiometry": "RNA:1",
+      "polymer_residue_count": 171
+    },
+    {
+      "composition_id": "06",
+      "label": "EXPL_RNA_W3_9981_10181",
+      "asset_ids": [
+        "SA1_RNA_W3"
+      ],
+      "purpose": "Candidate RNA-repertoire illustration; compare local fold confidence and topology.",
+      "evidence_status": "Exploratory genomic window; mature transcript endpoints and native fold unknown.",
+      "input_stoichiometry": "RNA:1",
+      "polymer_residue_count": 201
+    },
+    {
+      "composition_id": "07",
+      "label": "EXPL_RNA_W4_10182_10357",
+      "asset_ids": [
+        "SA1_RNA_W4"
+      ],
+      "purpose": "Candidate RNA-repertoire illustration; compare local fold confidence and topology.",
+      "evidence_status": "Exploratory genomic window; mature transcript endpoints and native fold unknown.",
+      "input_stoichiometry": "RNA:1",
+      "polymer_residue_count": 176
+    },
+    {
+      "composition_id": "08",
+      "label": "HYP_RT_RNA_W1",
+      "asset_ids": [
+        "SA1_RT",
+        "SA1_RNA_W1"
+      ],
+      "purpose": "Explore a candidate RNA-RT contact arrangement.",
+      "evidence_status": "Hypothetical interaction with a window-defined RNA; not evidence of RNA recognition or catalysis.",
+      "input_stoichiometry": "RT:1, RNA:1",
+      "polymer_residue_count": 713
+    },
+    {
+      "composition_id": "09",
+      "label": "HYP_RT_RNA_W2",
+      "asset_ids": [
+        "SA1_RT",
+        "SA1_RNA_W2"
+      ],
+      "purpose": "Explore a candidate RNA-RT contact arrangement.",
+      "evidence_status": "Hypothetical interaction with a window-defined RNA; not evidence of RNA recognition or catalysis.",
+      "input_stoichiometry": "RT:1, RNA:1",
+      "polymer_residue_count": 672
+    },
+    {
+      "composition_id": "10",
+      "label": "HYP_RT_RNA_W3",
+      "asset_ids": [
+        "SA1_RT",
+        "SA1_RNA_W3"
+      ],
+      "purpose": "Explore a candidate RNA-RT contact arrangement.",
+      "evidence_status": "Hypothetical interaction with a window-defined RNA; not evidence of RNA recognition or catalysis.",
+      "input_stoichiometry": "RT:1, RNA:1",
+      "polymer_residue_count": 702
+    },
+    {
+      "composition_id": "11",
+      "label": "HYP_RT_RNA_W4",
+      "asset_ids": [
+        "SA1_RT",
+        "SA1_RNA_W4"
+      ],
+      "purpose": "Explore a candidate RNA-RT contact arrangement.",
+      "evidence_status": "Hypothetical interaction with a window-defined RNA; not evidence of RNA recognition or catalysis.",
+      "input_stoichiometry": "RT:1, RNA:1",
+      "polymer_residue_count": 677
+    },
+    {
+      "composition_id": "12",
+      "label": "HYP_PARTNER_RNA_W1",
+      "asset_ids": [
+        "SA1_PARTNER",
+        "SA1_RNA_W1"
+      ],
+      "purpose": "Explore whether the candidate partner has a consistent predicted RNA-contact arrangement.",
+      "evidence_status": "Hypothetical interaction with a window-defined RNA; not evidence of RNA binding.",
+      "input_stoichiometry": "Partner:1, RNA:1",
+      "polymer_residue_count": 477
+    },
+    {
+      "composition_id": "13",
+      "label": "HYP_PARTNER_RNA_W2",
+      "asset_ids": [
+        "SA1_PARTNER",
+        "SA1_RNA_W2"
+      ],
+      "purpose": "Explore whether the candidate partner has a consistent predicted RNA-contact arrangement.",
+      "evidence_status": "Hypothetical interaction with a window-defined RNA; not evidence of RNA binding.",
+      "input_stoichiometry": "Partner:1, RNA:1",
+      "polymer_residue_count": 436
+    },
+    {
+      "composition_id": "14",
+      "label": "HYP_PARTNER_RNA_W3",
+      "asset_ids": [
+        "SA1_PARTNER",
+        "SA1_RNA_W3"
+      ],
+      "purpose": "Explore whether the candidate partner has a consistent predicted RNA-contact arrangement.",
+      "evidence_status": "Hypothetical interaction with a window-defined RNA; not evidence of RNA binding.",
+      "input_stoichiometry": "Partner:1, RNA:1",
+      "polymer_residue_count": 466
+    },
+    {
+      "composition_id": "15",
+      "label": "HYP_PARTNER_RNA_W4",
+      "asset_ids": [
+        "SA1_PARTNER",
+        "SA1_RNA_W4"
+      ],
+      "purpose": "Explore whether the candidate partner has a consistent predicted RNA-contact arrangement.",
+      "evidence_status": "Hypothetical interaction with a window-defined RNA; not evidence of RNA binding.",
+      "input_stoichiometry": "Partner:1, RNA:1",
+      "polymer_residue_count": 441
+    },
+    {
+      "composition_id": "16",
+      "label": "HYP_RT_PARTNER_RNA_W1",
+      "asset_ids": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W1"
+      ],
+      "purpose": "Candidate three-component composition for a labeled ART hypothesis illustration.",
+      "evidence_status": "Hypothetical assembly, stoichiometry and RNA boundaries. Never present as an experimentally solved ART structure.",
+      "input_stoichiometry": "RT:1, Partner:1, RNA:1",
+      "polymer_residue_count": 978
+    },
+    {
+      "composition_id": "17",
+      "label": "HYP_RT_PARTNER_RNA_W2",
+      "asset_ids": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W2"
+      ],
+      "purpose": "Candidate three-component composition for a labeled ART hypothesis illustration.",
+      "evidence_status": "Hypothetical assembly, stoichiometry and RNA boundaries. Never present as an experimentally solved ART structure.",
+      "input_stoichiometry": "RT:1, Partner:1, RNA:1",
+      "polymer_residue_count": 937
+    },
+    {
+      "composition_id": "18",
+      "label": "HYP_RT_PARTNER_RNA_W3",
+      "asset_ids": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W3"
+      ],
+      "purpose": "Candidate three-component composition for a labeled ART hypothesis illustration.",
+      "evidence_status": "Hypothetical assembly, stoichiometry and RNA boundaries. Never present as an experimentally solved ART structure.",
+      "input_stoichiometry": "RT:1, Partner:1, RNA:1",
+      "polymer_residue_count": 967
+    },
+    {
+      "composition_id": "19",
+      "label": "HYP_RT_PARTNER_RNA_W4",
+      "asset_ids": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W4"
+      ],
+      "purpose": "Candidate three-component composition for a labeled ART hypothesis illustration.",
+      "evidence_status": "Hypothetical assembly, stoichiometry and RNA boundaries. Never present as an experimentally solved ART structure.",
+      "input_stoichiometry": "RT:1, Partner:1, RNA:1",
+      "polymer_residue_count": 942
+    }
+  ],
+  "jobs": [
+    {
+      "name": "ART_SA1_01_RT_QPI16926_s101",
+      "composition_id": "01",
+      "stage": "01_core",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RT"
+      ],
+      "polymer_residue_count": 501,
+      "individual_file": "individual_jobs/ART_SA1_01_RT_QPI16926_s101.json"
+    },
+    {
+      "name": "ART_SA1_02_PARTNER_QPI16927_s101",
+      "composition_id": "02",
+      "stage": "01_core",
+      "seed": "101",
+      "entity_order": [
+        "SA1_PARTNER"
+      ],
+      "polymer_residue_count": 265,
+      "individual_file": "individual_jobs/ART_SA1_02_PARTNER_QPI16927_s101.json"
+    },
+    {
+      "name": "ART_SA1_03_HYP_RT_PARTNER_1to1_s101",
+      "composition_id": "03",
+      "stage": "01_core",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER"
+      ],
+      "polymer_residue_count": 766,
+      "individual_file": "individual_jobs/ART_SA1_03_HYP_RT_PARTNER_1to1_s101.json"
+    },
+    {
+      "name": "ART_SA1_03_HYP_RT_PARTNER_1to1_s202",
+      "composition_id": "03",
+      "stage": "01_core",
+      "seed": "202",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER"
+      ],
+      "polymer_residue_count": 766,
+      "individual_file": "individual_jobs/ART_SA1_03_HYP_RT_PARTNER_1to1_s202.json"
+    },
+    {
+      "name": "ART_SA1_03_HYP_RT_PARTNER_1to1_s303",
+      "composition_id": "03",
+      "stage": "01_core",
+      "seed": "303",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER"
+      ],
+      "polymer_residue_count": 766,
+      "individual_file": "individual_jobs/ART_SA1_03_HYP_RT_PARTNER_1to1_s303.json"
+    },
+    {
+      "name": "ART_SA1_04_EXPL_RNA_W1_9598_9809_s101",
+      "composition_id": "04",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RNA_W1"
+      ],
+      "polymer_residue_count": 212,
+      "individual_file": "individual_jobs/ART_SA1_04_EXPL_RNA_W1_9598_9809_s101.json"
+    },
+    {
+      "name": "ART_SA1_05_EXPL_RNA_W2_9810_9980_s101",
+      "composition_id": "05",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RNA_W2"
+      ],
+      "polymer_residue_count": 171,
+      "individual_file": "individual_jobs/ART_SA1_05_EXPL_RNA_W2_9810_9980_s101.json"
+    },
+    {
+      "name": "ART_SA1_06_EXPL_RNA_W3_9981_10181_s101",
+      "composition_id": "06",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RNA_W3"
+      ],
+      "polymer_residue_count": 201,
+      "individual_file": "individual_jobs/ART_SA1_06_EXPL_RNA_W3_9981_10181_s101.json"
+    },
+    {
+      "name": "ART_SA1_07_EXPL_RNA_W4_10182_10357_s101",
+      "composition_id": "07",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RNA_W4"
+      ],
+      "polymer_residue_count": 176,
+      "individual_file": "individual_jobs/ART_SA1_07_EXPL_RNA_W4_10182_10357_s101.json"
+    },
+    {
+      "name": "ART_SA1_08_HYP_RT_RNA_W1_s101",
+      "composition_id": "08",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_RNA_W1"
+      ],
+      "polymer_residue_count": 713,
+      "individual_file": "individual_jobs/ART_SA1_08_HYP_RT_RNA_W1_s101.json"
+    },
+    {
+      "name": "ART_SA1_09_HYP_RT_RNA_W2_s101",
+      "composition_id": "09",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_RNA_W2"
+      ],
+      "polymer_residue_count": 672,
+      "individual_file": "individual_jobs/ART_SA1_09_HYP_RT_RNA_W2_s101.json"
+    },
+    {
+      "name": "ART_SA1_10_HYP_RT_RNA_W3_s101",
+      "composition_id": "10",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_RNA_W3"
+      ],
+      "polymer_residue_count": 702,
+      "individual_file": "individual_jobs/ART_SA1_10_HYP_RT_RNA_W3_s101.json"
+    },
+    {
+      "name": "ART_SA1_11_HYP_RT_RNA_W4_s101",
+      "composition_id": "11",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_RNA_W4"
+      ],
+      "polymer_residue_count": 677,
+      "individual_file": "individual_jobs/ART_SA1_11_HYP_RT_RNA_W4_s101.json"
+    },
+    {
+      "name": "ART_SA1_12_HYP_PARTNER_RNA_W1_s101",
+      "composition_id": "12",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_PARTNER",
+        "SA1_RNA_W1"
+      ],
+      "polymer_residue_count": 477,
+      "individual_file": "individual_jobs/ART_SA1_12_HYP_PARTNER_RNA_W1_s101.json"
+    },
+    {
+      "name": "ART_SA1_13_HYP_PARTNER_RNA_W2_s101",
+      "composition_id": "13",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_PARTNER",
+        "SA1_RNA_W2"
+      ],
+      "polymer_residue_count": 436,
+      "individual_file": "individual_jobs/ART_SA1_13_HYP_PARTNER_RNA_W2_s101.json"
+    },
+    {
+      "name": "ART_SA1_14_HYP_PARTNER_RNA_W3_s101",
+      "composition_id": "14",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_PARTNER",
+        "SA1_RNA_W3"
+      ],
+      "polymer_residue_count": 466,
+      "individual_file": "individual_jobs/ART_SA1_14_HYP_PARTNER_RNA_W3_s101.json"
+    },
+    {
+      "name": "ART_SA1_15_HYP_PARTNER_RNA_W4_s101",
+      "composition_id": "15",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_PARTNER",
+        "SA1_RNA_W4"
+      ],
+      "polymer_residue_count": 441,
+      "individual_file": "individual_jobs/ART_SA1_15_HYP_PARTNER_RNA_W4_s101.json"
+    },
+    {
+      "name": "ART_SA1_16_HYP_RT_PARTNER_RNA_W1_s101",
+      "composition_id": "16",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W1"
+      ],
+      "polymer_residue_count": 978,
+      "individual_file": "individual_jobs/ART_SA1_16_HYP_RT_PARTNER_RNA_W1_s101.json"
+    },
+    {
+      "name": "ART_SA1_17_HYP_RT_PARTNER_RNA_W2_s101",
+      "composition_id": "17",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W2"
+      ],
+      "polymer_residue_count": 937,
+      "individual_file": "individual_jobs/ART_SA1_17_HYP_RT_PARTNER_RNA_W2_s101.json"
+    },
+    {
+      "name": "ART_SA1_18_HYP_RT_PARTNER_RNA_W3_s101",
+      "composition_id": "18",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W3"
+      ],
+      "polymer_residue_count": 967,
+      "individual_file": "individual_jobs/ART_SA1_18_HYP_RT_PARTNER_RNA_W3_s101.json"
+    },
+    {
+      "name": "ART_SA1_19_HYP_RT_PARTNER_RNA_W4_s101",
+      "composition_id": "19",
+      "stage": "02_exploratory_RNA",
+      "seed": "101",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W4"
+      ],
+      "polymer_residue_count": 942,
+      "individual_file": "individual_jobs/ART_SA1_19_HYP_RT_PARTNER_RNA_W4_s101.json"
+    },
+    {
+      "name": "ART_SA1_16_HYP_RT_PARTNER_RNA_W1_s202",
+      "composition_id": "16",
+      "stage": "03_optional_RNA_seed_repeats",
+      "seed": "202",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W1"
+      ],
+      "polymer_residue_count": 978,
+      "individual_file": "individual_jobs/ART_SA1_16_HYP_RT_PARTNER_RNA_W1_s202.json"
+    },
+    {
+      "name": "ART_SA1_16_HYP_RT_PARTNER_RNA_W1_s303",
+      "composition_id": "16",
+      "stage": "03_optional_RNA_seed_repeats",
+      "seed": "303",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W1"
+      ],
+      "polymer_residue_count": 978,
+      "individual_file": "individual_jobs/ART_SA1_16_HYP_RT_PARTNER_RNA_W1_s303.json"
+    },
+    {
+      "name": "ART_SA1_17_HYP_RT_PARTNER_RNA_W2_s202",
+      "composition_id": "17",
+      "stage": "03_optional_RNA_seed_repeats",
+      "seed": "202",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W2"
+      ],
+      "polymer_residue_count": 937,
+      "individual_file": "individual_jobs/ART_SA1_17_HYP_RT_PARTNER_RNA_W2_s202.json"
+    },
+    {
+      "name": "ART_SA1_17_HYP_RT_PARTNER_RNA_W2_s303",
+      "composition_id": "17",
+      "stage": "03_optional_RNA_seed_repeats",
+      "seed": "303",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W2"
+      ],
+      "polymer_residue_count": 937,
+      "individual_file": "individual_jobs/ART_SA1_17_HYP_RT_PARTNER_RNA_W2_s303.json"
+    },
+    {
+      "name": "ART_SA1_18_HYP_RT_PARTNER_RNA_W3_s202",
+      "composition_id": "18",
+      "stage": "03_optional_RNA_seed_repeats",
+      "seed": "202",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W3"
+      ],
+      "polymer_residue_count": 967,
+      "individual_file": "individual_jobs/ART_SA1_18_HYP_RT_PARTNER_RNA_W3_s202.json"
+    },
+    {
+      "name": "ART_SA1_18_HYP_RT_PARTNER_RNA_W3_s303",
+      "composition_id": "18",
+      "stage": "03_optional_RNA_seed_repeats",
+      "seed": "303",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W3"
+      ],
+      "polymer_residue_count": 967,
+      "individual_file": "individual_jobs/ART_SA1_18_HYP_RT_PARTNER_RNA_W3_s303.json"
+    },
+    {
+      "name": "ART_SA1_19_HYP_RT_PARTNER_RNA_W4_s202",
+      "composition_id": "19",
+      "stage": "03_optional_RNA_seed_repeats",
+      "seed": "202",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W4"
+      ],
+      "polymer_residue_count": 942,
+      "individual_file": "individual_jobs/ART_SA1_19_HYP_RT_PARTNER_RNA_W4_s202.json"
+    },
+    {
+      "name": "ART_SA1_19_HYP_RT_PARTNER_RNA_W4_s303",
+      "composition_id": "19",
+      "stage": "03_optional_RNA_seed_repeats",
+      "seed": "303",
+      "entity_order": [
+        "SA1_RT",
+        "SA1_PARTNER",
+        "SA1_RNA_W4"
+      ],
+      "polymer_residue_count": 942,
+      "individual_file": "individual_jobs/ART_SA1_19_HYP_RT_PARTNER_RNA_W4_s303.json"
+    }
+  ],
+  "batch_files": {
+    "01_core_5jobs.json": [
+      "ART_SA1_01_RT_QPI16926_s101",
+      "ART_SA1_02_PARTNER_QPI16927_s101",
+      "ART_SA1_03_HYP_RT_PARTNER_1to1_s101",
+      "ART_SA1_03_HYP_RT_PARTNER_1to1_s202",
+      "ART_SA1_03_HYP_RT_PARTNER_1to1_s303"
+    ],
+    "02_exploratory_RNA_16jobs.json": [
+      "ART_SA1_04_EXPL_RNA_W1_9598_9809_s101",
+      "ART_SA1_05_EXPL_RNA_W2_9810_9980_s101",
+      "ART_SA1_06_EXPL_RNA_W3_9981_10181_s101",
+      "ART_SA1_07_EXPL_RNA_W4_10182_10357_s101",
+      "ART_SA1_08_HYP_RT_RNA_W1_s101",
+      "ART_SA1_09_HYP_RT_RNA_W2_s101",
+      "ART_SA1_10_HYP_RT_RNA_W3_s101",
+      "ART_SA1_11_HYP_RT_RNA_W4_s101",
+      "ART_SA1_12_HYP_PARTNER_RNA_W1_s101",
+      "ART_SA1_13_HYP_PARTNER_RNA_W2_s101",
+      "ART_SA1_14_HYP_PARTNER_RNA_W3_s101",
+      "ART_SA1_15_HYP_PARTNER_RNA_W4_s101",
+      "ART_SA1_16_HYP_RT_PARTNER_RNA_W1_s101",
+      "ART_SA1_17_HYP_RT_PARTNER_RNA_W2_s101",
+      "ART_SA1_18_HYP_RT_PARTNER_RNA_W3_s101",
+      "ART_SA1_19_HYP_RT_PARTNER_RNA_W4_s101"
+    ],
+    "03_optional_RNA_seed_repeats_8jobs.json": [
+      "ART_SA1_16_HYP_RT_PARTNER_RNA_W1_s202",
+      "ART_SA1_16_HYP_RT_PARTNER_RNA_W1_s303",
+      "ART_SA1_17_HYP_RT_PARTNER_RNA_W2_s202",
+      "ART_SA1_17_HYP_RT_PARTNER_RNA_W2_s303",
+      "ART_SA1_18_HYP_RT_PARTNER_RNA_W3_s202",
+      "ART_SA1_18_HYP_RT_PARTNER_RNA_W3_s303",
+      "ART_SA1_19_HYP_RT_PARTNER_RNA_W4_s202",
+      "ART_SA1_19_HYP_RT_PARTNER_RNA_W4_s303"
+    ],
+    "all_29_jobs.json": [
+      "ART_SA1_01_RT_QPI16926_s101",
+      "ART_SA1_02_PARTNER_QPI16927_s101",
+      "ART_SA1_03_HYP_RT_PARTNER_1to1_s101",
+      "ART_SA1_03_HYP_RT_PARTNER_1to1_s202",
+      "ART_SA1_03_HYP_RT_PARTNER_1to1_s303",
+      "ART_SA1_04_EXPL_RNA_W1_9598_9809_s101",
+      "ART_SA1_05_EXPL_RNA_W2_9810_9980_s101",
+      "ART_SA1_06_EXPL_RNA_W3_9981_10181_s101",
+      "ART_SA1_07_EXPL_RNA_W4_10182_10357_s101",
+      "ART_SA1_08_HYP_RT_RNA_W1_s101",
+      "ART_SA1_09_HYP_RT_RNA_W2_s101",
+      "ART_SA1_10_HYP_RT_RNA_W3_s101",
+      "ART_SA1_11_HYP_RT_RNA_W4_s101",
+      "ART_SA1_12_HYP_PARTNER_RNA_W1_s101",
+      "ART_SA1_13_HYP_PARTNER_RNA_W2_s101",
+      "ART_SA1_14_HYP_PARTNER_RNA_W3_s101",
+      "ART_SA1_15_HYP_PARTNER_RNA_W4_s101",
+      "ART_SA1_16_HYP_RT_PARTNER_RNA_W1_s101",
+      "ART_SA1_17_HYP_RT_PARTNER_RNA_W2_s101",
+      "ART_SA1_18_HYP_RT_PARTNER_RNA_W3_s101",
+      "ART_SA1_19_HYP_RT_PARTNER_RNA_W4_s101",
+      "ART_SA1_16_HYP_RT_PARTNER_RNA_W1_s202",
+      "ART_SA1_16_HYP_RT_PARTNER_RNA_W1_s303",
+      "ART_SA1_17_HYP_RT_PARTNER_RNA_W2_s202",
+      "ART_SA1_17_HYP_RT_PARTNER_RNA_W2_s303",
+      "ART_SA1_18_HYP_RT_PARTNER_RNA_W3_s202",
+      "ART_SA1_18_HYP_RT_PARTNER_RNA_W3_s303",
+      "ART_SA1_19_HYP_RT_PARTNER_RNA_W4_s202",
+      "ART_SA1_19_HYP_RT_PARTNER_RNA_W4_s303"
+    ]
+  },
+  "interpretation_rules": [
+    "Native protein sequence provenance does not validate an oligomeric state or binding interface.",
+    "RNA windows are not verified mature RNA products, even if AF confidence is high.",
+    "No arbitrary DNA primer, incoming dNTP, magnesium count, crosslink, glycan, protein tag, mutation, or truncation is added.",
+    "No contact hypothesis may be labeled experimentally observed on the basis of an AF prediction.",
+    "Keep full confidence outputs and compare chain-pair confidence as well as topology and clashes.",
+    "Do not interpolate seed outputs as a biological trajectory.",
+    "Confirm output-use rights before professional or commercial distribution."
+  ]
+}

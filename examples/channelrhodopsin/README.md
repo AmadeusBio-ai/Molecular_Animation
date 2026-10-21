@@ -9,7 +9,7 @@ A 21 s scientific illustration for the 2026 Nobel Prize in Physiology or Medicin
 2. The protein's interaction network rearranges (Lys132 swings to Glu129).
 3. The cation pathway is shown first as the crystal has it, interrupted, then open in a labelled, illustrative conducting-state model.
 
-The film comes in a labelled and a clean version (1920×1080, 24 fps, MP4 + WebM). Version 3, with motion from physics, is published in the [`v0.2.0` release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.2.0); get it with `python pipeline.py fetch channelrhodopsin`. Version 1 (no thermal motion, the original palette) stays in [`v0.1.0`](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.1.0).
+The film comes in a labelled and a clean version (1920×1080, 24 fps, MP4 + WebM). Version 3, with motion from physics, is published in the [`v0.2.0` release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.2.0); get it with `python pipeline.py fetch channelrhodopsin`. Version 1 (no thermal motion, the original palette) stays in [`v0.1.0`](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.1.0). Version 4 (`channelrhodopsin_v4.py`; the same science, camera and motion, drawn as cartoons with retinal's π lobes on a pure white ground, its labels exported to `labels.json` for a web page) is in [`v0.3.0`](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.3.0): `python pipeline.py fetch channelrhodopsin-v4`.
 
 ## From brief to film
 

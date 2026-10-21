@@ -36,6 +36,7 @@ python pipeline.py doctor
 python -m pytest tests                     # framework and case-study science (no Blender needed)
 python pipeline.py smoke                   # builds every shot, renders one small still each (~70 s)
 python pipeline.py fetch channelrhodopsin  # the delivered case-study films and posters (release v0.2.0)
+python pipeline.py fetch channelrhodopsin-v4  # version 4, drawn for the web (release v0.3.0)
 python pipeline.py check channelrhodopsin  # rebuild, render frame 70 at delivery settings, compare with the poster
 ```
 
