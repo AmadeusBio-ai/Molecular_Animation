@@ -150,3 +150,46 @@ Takes: `renders/website/plates/take-01/` (256 samples; 2000 px wide, the nucleos
 contact band; superseded framings in `take-01/superseded/`). Build reports repeat the earlier measurements
 (32 hydrogen bonds, 2.61-3.25 A; 7 K+; pore 0.16-6.39 A). The hero loop has a `paper` look in `mark.py`
 (camera sees pure white), rendered as `renders/website/mark/take-03/` (336 frames) from `mark-paper.blend`.
+
+## Plate loops (21 October 2026): the plates, moving
+
+The owner asked to render the gallery loops and put them on the website. `loops.py` (fourth round) animates the
+retired gallery stills, so its loops were never rendered; `plate_loops.py` makes them from the current plates
+instead. Each loop rebuilds its plate (same structures, layers, colours, cuts and framing) at the size the site
+shows it and moves only the camera: the camera, its focus empty and the three suns turn as one rig about a pivot
+(`loops.rig_rotation`, `loops.track_matrix`), so the lighting on the molecule never changes and nothing in the
+molecule moves. Frame N + 1 equals frame 1, so a loop is frames 1..N.
+
+| Shot | Motion | Frames | Size | Render |
+|---|---|---|---|---|
+| hemoglobin | turn about the vertical, camera 8 % further out (take-02) | 288 | 960 x 720 | 18 min |
+| dna | turn about the helix axis | 288 | 960 x 720 | 13 min |
+| p53dna | drift +-12 deg / +6 deg | 240 | 960 x 720 | 11 min |
+| gfp | drift +-8 deg / +4 deg | 240 | 960 x 720 | 10 min |
+| kcsa | drift +-12 deg / +6 deg | 240 | 960 x 720 | 10 min |
+| aquaporin | drift +-12 deg / +6 deg | 240 | 960 x 720 | 11 min |
+| igg | drift +-14 deg / +8 deg | 240 | 1280 x 720 | 16 min |
+| nucleosome | drift +-12 deg / +6 deg | 240 | 1600 x 900 | 25 min |
+| agents | drift +-8 deg / +6 deg | 240 | 1280 x 800 | 18 min |
+
+- **Turn or drift.** The plates' cutaways are fixed geometry chosen for the plate's view (the GFP barrel's front
+  residues are left out, the aquaporin membrane is cut in front, KcsA shows two opposite subunits), so only
+  hemoglobin and the DNA turn all the way round. The nucleosome is seen nearly face-on, where a turn about its disc
+  axis would read as a flat spin, so it drifts too.
+- **Checks before rendering.** Stills at loop phases 0, 0.25, 0.5 and 0.75 (50 %) for every shot, with the edge
+  rule (`loop_edges.py`: no picture within 6 px of the edge, outside the 3 px border the website encoder whitens).
+  Three consecutive full-size frames of the nucleosome and aquaporin show no denoiser shimmer: the change over two
+  frames is about 1.75 times the change over one (steady motion), not equal to it (noise).
+- **Check after rendering.** Every frame of every loop (`loop_margins.py`, and the website's encoder):
+  hemoglobin's take-01 swung the faint envelope through the bottom edge on frames 241-260, which the four-phase
+  stills had missed, so take-02 frames it 8 % wider (`ZOOM`) and starts on its own frame 1 rather than the plate.
+  All other loops keep at least 6 px of white to every edge; p53's faint low-confidence chain tints the 6 px band
+  by at most 16 grey levels.
+- **Seam and poster.** The nucleosome's step from frame 240 back to frame 1 equals its other steps (mean 0.96
+  levels); its frame 1 matches the plate (mean difference 0.96 levels, render noise), so the plate is its poster.
+- Build reports repeat the plates' measurements (32 hydrogen bonds, 2.61-3.25 A; 7 K+; pore 0.16-6.39 A;
+  histones +148 e, DNA -292 e). Takes: `renders/website/plate-loops/<shot>/take-01/` (hemoglobin: take-02),
+  64 samples, adaptive 0.02, denoised, Blender 5.2.2, OptiX on the RTX 5060 Ti. To render them all (resumable):
+  `bash projects/website/render_plate_loops.sh`.
+- **Website:** H.264 only, CRF 23 (on these loops x264 was smaller than VP9 at equal quality); sizes, PSNR and
+  tags are in the website repository's `docs/media.md`, "tenth round".
