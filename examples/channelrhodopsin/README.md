@@ -2,7 +2,7 @@
 
 | | | |
 | --- | --- | --- |
-| ![Membrane section](../../docs/media/channelrhodopsin-wide.jpg) | ![Retinal twist](../../docs/media/channelrhodopsin-retinal.jpg) | ![Open pathway](../../docs/media/channelrhodopsin-channel.jpg) |
+| ![Membrane section: the channelrhodopsin C1C2 dimer as ribbon cartoons in a lipid bilayer, with cations around it](../../docs/media/channelrhodopsin-wide.jpg) | ![Retinal twist: the retinal chromophore in ball-and-stick inside the helix bundle, with pi lobes over its conjugated chain](../../docs/media/channelrhodopsin-retinal.jpg) | ![Open pathway: the cation pathway drawn as a translucent tube through channelrhodopsin in the membrane](../../docs/media/channelrhodopsin-channel.jpg) |
 
 A 21 s scientific illustration for the 2026 Nobel Prize in Physiology or Medicine (light-gated ion channels and optogenetics), made from a single brief with this framework:
 1. A photon isomerises retinal in channelrhodopsin C1C2.

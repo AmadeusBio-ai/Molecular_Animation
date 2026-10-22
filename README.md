@@ -1,10 +1,10 @@
-# Molecular Animation
+# Molecular Animation: scientific protein and molecule animation in Blender
 
 [![tests](https://github.com/AmadeusBio-ai/Molecular_Animation/actions/workflows/ci.yml/badge.svg)](https://github.com/AmadeusBio-ai/Molecular_Animation/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-**An open framework for turning a scientific brief into an honest, beautiful molecular animation with Blender.** You hand over a request, a paper-style brief or a reference, and you get back:
-- a scripted Blender 5.2 scene built from PDB structures;
+**An open-source Python framework and Blender pipeline for turning a scientific brief into an honest, beautiful molecular animation.** You hand over a request, a paper-style brief or a reference, plus structures from the Protein Data Bank or AlphaFold, and you get back a film of proteins, nucleic acids and ligands:
+- a scripted Blender 5.2 scene built from PDB/mmCIF structures;
 - rendered takes;
 - labelled and clean MP4/WebM films with posters;
 - a production record that states, beat by beat, what is experimental and what is illustrative.
@@ -14,6 +14,10 @@ It is designed to be driven by an AI agent (Claude Code through Blender MCP) and
 https://github.com/user-attachments/assets/33a48c82-e1be-4c0d-ae49-af9d943b4180
 
 *Case study: [channelrhodopsin](examples/channelrhodopsin/), from a brief on the 2026 Nobel Prize in Physiology or Medicine. A photon twists retinal, the protein responds, and a cation pathway opens. 21 s, built from PDB 9GO1/9GO2. This is version 4, drawn for a white web page (cartoons, retinal's π lobes, labels exported as data), with thermal motion at measured rates. It and a second film, [ART](projects/art-rna/) (an RNA-making reverse transcriptase locus of phage SA1, with AlphaFold Server predictions), are in the [v0.3.0 release](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.3.0); version 3 is in [v0.2.0](https://github.com/AmadeusBio-ai/Molecular_Animation/releases/tag/v0.2.0).*
+
+| | | |
+| --- | --- | --- |
+| ![Channelrhodopsin C1C2 dimer as blue ribbon cartoons in a lipid bilayer of white and blue atoms, with cations above and below the membrane](docs/media/channelrhodopsin-wide.jpg) | ![Close-up of the retinal chromophore in orange ball-and-stick inside the channelrhodopsin helix bundle, with translucent blue pi lobes over its conjugated chain](docs/media/channelrhodopsin-retinal.jpg) | ![Channelrhodopsin in the membrane with its cation pathway drawn as a translucent blue tube through the protein](docs/media/channelrhodopsin-channel.jpg) |
 
 ## What's inside
 
@@ -77,7 +81,7 @@ The case study shows the whole path from `sources/Nobel_Med_2026.md` to the deli
 molanim/              the framework (pure-numpy science + molanim.blender)
 pipeline.py           command-line pipeline; discovers examples/*/shots.json and projects/*/shots.json
 examples/             finished case studies (channelrhodopsin)
-projects/             your films (scaffolded by `pipeline.py new`)
+projects/             films made with it (ART, website plates) and yours (scaffolded by `pipeline.py new`)
 templates/shot/       the project scaffold
 assets/pdb/           structures from RCSB + SHA256SUMS
 tools/                render.py (inside Blender), encode.py, MCP smoke test, Windows MCP launcher
@@ -94,6 +98,44 @@ AGENTS.md, CLAUDE.md  agent guide; .claude/skills/new-film is the /new-film skil
 - **Pinned inputs.** Structures are committed with checksums. Blender 5.2 is pinned. Every Blender call uses `--factory-startup`, and the GPU is selected explicitly.
 - **Verified output.** `pipeline.py check` rebuilds a shot and compares a freshly rendered poster frame with the delivered one. After the case study was refactored onto `molanim`, its posters matched within 1/255 and its label frames were pixel-identical; version 3's poster still matches within 1/255 after the template's motion was generalised.
 
+## How it relates to Molecular Nodes, PyMOL, ChimeraX and VMD
+
+These are excellent tools and the right choice for many jobs:
+- **[Molecular Nodes](https://github.com/BradyAJohnston/MolecularNodes)** is a Blender add-on for importing and styling structures, trajectories and density maps with Geometry Nodes, interactively.
+- **[PyMOL](https://pymol.org), [UCSF ChimeraX](https://www.cgl.ucsf.edu/chimerax/) and [VMD](https://www.ks.uiuc.edu/Research/vmd/)** are molecular viewers and analysis programs that can also record movies.
+
+Molecular Animation is a production pipeline rather than a viewer or an importer. A film is a Python script: storyboard constants, the brief's structural claims checked numerically, motion at literature rates, a separate label pass, and a record that tags every beat with its evidence level. It reads mmCIF with its own numpy layer and builds its geometry nodes directly, so it depends on none of the tools above. Use it for a narrative film whose claims you can trace and rebuild; use them for interactive exploration, figures and trajectory analysis.
+
+## FAQ
+
+### How do I animate a protein from the PDB in Blender?
+
+Run `python pipeline.py new <name> --pdb <ID>`. It downloads the mmCIF entry from RCSB and scaffolds a working shot: a dive through a cutaway to the largest ligand, with labels, or a seamless orbit with `--loop`. Build it, look at stills, then edit the storyboard constants (see [Quick start](#quick-start)).
+
+### Can it animate AlphaFold models?
+
+Yes; `molanim.structure.read_mmcif` reads any mmCIF file. The [website plates](projects/website/) draw an AlphaFold DB model coloured by pLDDT, and the [ART film](projects/art-rna/) uses AlphaFold Server predictions. Show a prediction's confidence and don't animate what it doesn't support ([principles](docs/principles.md)).
+
+### Is the motion a molecular dynamics simulation?
+
+No. Thermal and Brownian motion is modelled, not simulated: tumbling and diffusion at hydrodynamic rates, elastic-network normal modes and side-chain turns about bonds, at rates from the literature and on one clock per film ([docs/motion.md](docs/motion.md)). Conformational changes are constrained morphs between experimental states, and the films label them as illustrative.
+
+### How does it keep the science honest?
+
+Every beat carries an evidence level (experimental, simulation-derived or illustrative) in the script, on screen in the labelled film, and in the production record. The brief's structural claims are measured on the structures before they are animated, because briefs, including AI-generated ones, can be wrong, and each build reports its checks in `RESULT`. See [docs/principles.md](docs/principles.md).
+
+### Do I need an AI agent?
+
+No. `pipeline.py` is a plain command line and every film is a Python script you can edit by hand. [AGENTS.md](AGENTS.md) and the `/new-film` skill let Claude Code, or another coding agent, run the [workflow](docs/workflow.md) through Blender MCP.
+
+### What hardware does it need?
+
+Blender 5.2, a Cycles-capable GPU (NVIDIA OptiX recommended) and ffmpeg. It was built and tested on Windows 11 with an RTX 5060 Ti and should work on macOS and Linux, though that is untested ([docs/setup.md](docs/setup.md)). Previews take minutes; final takes take hours.
+
+## Citing
+
+If you use Molecular Animation in a paper, talk or film, please cite it. [CITATION.cff](CITATION.cff) holds the metadata, and GitHub's "Cite this repository" button turns it into APA or BibTeX.
+
 ## Contributing
 
 New case studies, framework features and portability fixes are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [code of conduct](CODE_OF_CONDUCT.md).
@@ -101,6 +143,6 @@ New case studies, framework features and portability fixes are welcome. See [CON
 ## License and credits
 
 - **Code and documentation:** Apache License 2.0 (`LICENSE`, `NOTICE`). © 2026 AmadeusBio.ai.
-- **Structures:** from the [RCSB Protein Data Bank](https://www.rcsb.org); PDB data are CC0. The case study uses [9GO1](https://www.rcsb.org/structure/9GO1) and [9GO2](https://www.rcsb.org/structure/9GO2) (C1C2 channelrhodopsin).
+- **Structures:** from the [RCSB Protein Data Bank](https://www.rcsb.org); PDB data are CC0. The case study uses [9GO1](https://www.rcsb.org/structure/9GO1) and [9GO2](https://www.rcsb.org/structure/9GO2) (C1C2 channelrhodopsin). The website plates also use [AF-P04637-F1](https://alphafold.ebi.ac.uk/entry/P04637) from the [AlphaFold Protein Structure Database](https://alphafold.ebi.ac.uk) (CC BY 4.0).
 - **Case-study brief:** generated with ChatGPT; provenance and share link in [examples/channelrhodopsin/sources/](examples/channelrhodopsin/sources/README.md).
 - **Tools:** built with [Blender](https://www.blender.org) and the [Blender Lab MCP server](https://projects.blender.org/lab/blender_mcp).

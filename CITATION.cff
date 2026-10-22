@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use Molecular Animation, please cite it using these metadata."
+type: software
+title: "Molecular Animation: scientific protein and molecule animation in Blender"
+abstract: >-
+  An open-source Python framework and Blender 5.2 pipeline that turns a
+  scientific brief and PDB/mmCIF or AlphaFold structures into honest,
+  beautiful molecular animation: scripted scenes, rendered takes, labelled
+  and clean MP4/WebM films with posters, and a production record that tags
+  every beat as experimental, simulation-derived or illustrative. Thermal
+  and Brownian motion is modelled at literature rates. The pipeline can be
+  driven by an AI agent (Claude Code through Blender MCP) or by hand.
+authors:
+  - name: AmadeusBio.ai
+    website: "https://www.amadeusbio.ai"
+repository-code: "https://github.com/AmadeusBio-ai/Molecular_Animation"
+url: "https://github.com/AmadeusBio-ai/Molecular_Animation"
+license: Apache-2.0
+version: 0.3.0
+date-released: "2026-10-21"
+keywords:
+  - molecular animation
+  - molecular visualization
+  - protein structure
+  - structural biology
+  - scientific visualization
+  - science communication
+  - Blender
+  - Protein Data Bank
+  - mmCIF
+  - AlphaFold
+  - optogenetics
+  - AI agents
