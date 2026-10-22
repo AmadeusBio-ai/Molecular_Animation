@@ -114,7 +114,7 @@ Run `python pipeline.py new <name> --pdb <ID>`. It downloads the mmCIF entry fro
 
 ### Can it animate AlphaFold models?
 
-Yes; `molanim.structure.read_mmcif` reads any mmCIF file. The [website plates](projects/website/) draw an AlphaFold DB model coloured by pLDDT, and the [ART film](projects/art-rna/) uses AlphaFold Server predictions. Show a prediction's confidence and don't animate what it doesn't support ([principles](docs/principles.md)).
+Yes; `molanim.structure.read_mmcif` reads any mmCIF file. The [website plates](projects/website/) draw an AlphaFold DB model coloured by pLDDT, and the [ART film](projects/art-rna/) uses AlphaFold Server predictions. `pipeline.py new` and `pipeline.py pdb` download RCSB entries only, so put a model file next to your shot and load it in the script, as `projects/website/gallery.py` does. The template's evidence tag assumes an experimental entry: say "predicted" and quote the confidence yourself, and don't animate what the prediction doesn't support ([principles](docs/principles.md)).
 
 ### Is the motion a molecular dynamics simulation?
 
