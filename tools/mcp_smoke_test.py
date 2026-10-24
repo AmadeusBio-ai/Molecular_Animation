@@ -57,11 +57,9 @@ def reset_scene():
 
 
 def material(name, color, rough=.35, coat=0.):
-    m = bpy.data.materials.new(PREFIX + name)
+    m = bpy.data.materials.new(PREFIX + name)    # 5.x: comes with Principled BSDF + Material Output
     m.diffuse_color = (*color, 1)
-    if m.node_tree is None:
-        m.use_nodes = True
-    p = m.node_tree.nodes['Principled BSDF']
+    p = next(n for n in m.node_tree.nodes if n.type == 'BSDF_PRINCIPLED')   # by type: names follow the UI language
     p.inputs['Base Color'].default_value = (*color, 1)
     p.inputs['Roughness'].default_value = rough
     p.inputs['Coat Weight'].default_value = coat
@@ -148,19 +146,12 @@ def build():
 
     world = bpy.data.worlds.new(PREFIX + 'World')
     world.color = (.2, .21, .23)
-    if world.node_tree is None:
-        world.use_nodes = True
-    background = world.node_tree.nodes['Background']
+    background = next(n for n in world.node_tree.nodes if n.type == 'BACKGROUND')
     background.inputs['Color'].default_value = (.2, .21, .23, 1)
     background.inputs['Strength'].default_value = .6
     scene.world = world
 
-    for engine in ('BLENDER_EEVEE', 'BLENDER_EEVEE_NEXT'):
-        try:
-            scene.render.engine = engine
-            break
-        except TypeError:
-            continue
+    scene.render.engine = 'BLENDER_EEVEE'     # Blender 5.x (BLENDER_EEVEE_NEXT existed only in 4.2-4.5)
     scene.frame_start, scene.frame_end, scene.render.fps = FRAME_START, FRAME_END, FPS
     scene.render.resolution_x, scene.render.resolution_y = 640, 360
     scene.render.resolution_percentage = 100

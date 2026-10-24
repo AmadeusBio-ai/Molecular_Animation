@@ -34,7 +34,7 @@ from molanim import structure as St  # noqa: E402
 from molanim import timeline as TL  # noqa: E402
 from molanim.blender import groups, labels, look, mesh, rig  # noqa: E402
 from molanim.blender import scene as SC  # noqa: E402
-from molanim.blender.nodes import new_group, set_modifier_inputs  # noqa: E402
+from molanim.blender.nodes import by_type, new_group, set_modifier_inputs  # noqa: E402
 
 for _m in ('art_locus', 'story_v3'):
     if _m in sys.modules:
@@ -181,10 +181,8 @@ def diagram_items(rep):
 
 def fade_material(name, rgb, f0, f1, fade=8):
     m = bpy.data.materials.new(name)
-    if m.node_tree is None:
-        m.use_nodes = True
     nt = m.node_tree
-    out = nt.nodes['Material Output']
+    out = by_type(nt, 'OUTPUT_MATERIAL')
     for nd in list(nt.nodes):
         if nd != out:
             nt.nodes.remove(nd)

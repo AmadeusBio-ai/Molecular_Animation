@@ -88,7 +88,11 @@ Keep `shots.json` in step with the script: fps, count, render range, label pass,
 ## 4. Build
 
 1. Extend the script with what the brief needs from `molanim`: morphs between states, pathways, membranes, particles, more structures. The case study shows each of these in use. Thermal and Brownian motion follow `docs/motion.md`: choose the film's clock, then move each molecule as a molecule at its rates (the template already does this for one protein). Keep the housekeeping: scene reset by prefix, save only the scene, `RESULT`.
+
+   Write `bpy` for Blender 5.2. Coding models, including the ones that drive this repo, learned it mostly from older versions. Check `docs/blender-5.md` before using an API from memory.
 2. Build headless with `python pipeline.py build <name>`. Or, in the open Blender, run `runpy.run_path(...)` through MCP.
+   - `build` first lints the shot's folder (`tools/bpy_lint.py`). An API that 5.2 rejects stops it there, with the fix, before Blender starts.
+   - After `RESULT`, it prints what a render would not show: Python deprecation warnings, geometry-node warnings, lint warnings.
 3. Make `RESULT` carry the checks:
    - counts;
    - the measured dihedrals and distances at the key frames;
@@ -97,7 +101,7 @@ Keep `shots.json` in step with the script: fps, count, render range, label pass,
    - the motion: clock, RMSF, the worst bond strain (`dynamics.displacement` gives every atom on every frame);
    - loop seam errors.
 
-   Read it every time you build.
+   Read it, and the notes after it, every time you build. Measure first: a still shows one frame, not what is wrong with the scene.
 4. Rebuild twice in a live session and confirm that no `.001` duplicates or orphans with the prefix remain.
 
 ## 5. Look-dev on stills
@@ -110,7 +114,7 @@ Keep `shots.json` in step with the script: fps, count, render range, label pass,
    - Are the interacting partners in focus together?
 3. When matching a reference, compare side by side and measure what can be measured: silhouette IoU, median colours, blur disc sizes.
 4. Crop at full resolution to check fine detail (`tools/render.py --border x0,y0,x1,y1`).
-5. Fold every change back into the script and rebuild.
+5. Fold every change back into the script and rebuild. Change the storyboard constants first (camera keys, beats, palette, scales). Change the code's structure only when the constants can't express the fix. Small changes keep each iteration cheap and the script readable as a storyboard.
 
 ## 6. Preview the motion
 
@@ -153,7 +157,7 @@ Keep `shots.json` in step with the script: fps, count, render range, label pass,
    - render cost;
    - known differences and limits.
 2. State the review method honestly, for example "reviewed from contact sheets, stills and decoded frames; not watched as continuous playback".
-3. Add any general lesson to `docs/principles.md` or `docs/blender-5.md`, and any reusable code to `molanim`.
+3. Add any general lesson to `docs/principles.md` or `docs/blender-5.md`, and any reusable code to `molanim`. A Blender API that surprised you goes into three places in one change: a row in `docs/blender-5.md`, a fact in `tools/api_probe.py` and a rule in `tools/bpy_lint.py`.
 
 ## Definition of done
 

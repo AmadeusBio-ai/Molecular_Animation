@@ -44,7 +44,7 @@ from molanim import structure as St  # noqa: E402
 from molanim import timeline as TL  # noqa: E402
 from molanim.blender import groups, labels, look, mesh, rig  # noqa: E402
 from molanim.blender import scene as SC  # noqa: E402
-from molanim.blender.nodes import set_modifier_inputs  # noqa: E402
+from molanim.blender.nodes import by_type, set_modifier_inputs  # noqa: E402
 
 for _m in ('c1c2', 'storyboard_v4', 'labels_data'):
     if _m in sys.modules:
@@ -275,7 +275,7 @@ def build():
         if inputs:
             set_modifier_inputs(md, inputs)
     # Absorption (illustrative): on white, the lobes deepen in colour and opacity for a moment rather than pale.
-    base = pi_mat.node_tree.nodes['Principled BSDF'].inputs['Base Color']
+    base = by_type(pi_mat.node_tree, 'BSDF_PRINCIPLED').inputs['Base Color']
     pramp = next(nd for nd in pi_mat.node_tree.nodes if nd.bl_idname == 'ShaderNodeMapRange')
     f0 = T['flash']
     for f, rgb, (lo, hi_) in ((1, B.PI_RGB, (0.2, 0.55)), (f0 - 2, B.PI_RGB, (0.2, 0.55)),

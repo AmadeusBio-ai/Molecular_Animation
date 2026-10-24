@@ -26,6 +26,7 @@ import numpy as np
 
 from ..color import lin
 from ..timeline import project
+from .nodes import by_type
 from .scene import reset_scene, save_scene, set_linear
 
 LAYOUT = {
@@ -56,10 +57,8 @@ def label_pass(scene_name, prefix, spec, path, anchors, res, frames, fps, blend_
     def ink_material(start, end, fade=L['fade']):
         count[0] += 1
         m = bpy.data.materials.new(f'{prefix}Ink_{count[0]:02d}')
-        if m.node_tree is None:
-            m.use_nodes = True
         nt = m.node_tree
-        out = nt.nodes['Material Output']
+        out = by_type(nt, 'OUTPUT_MATERIAL')
         for nd in list(nt.nodes):
             if nd != out:
                 nt.nodes.remove(nd)

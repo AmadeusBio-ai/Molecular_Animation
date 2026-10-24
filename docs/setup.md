@@ -26,6 +26,7 @@ python pipeline.py doctor
 
 `doctor` checks:
 - Blender's version and the GPU devices it finds;
+- the Blender 5.2 API facts that `docs/blender-5.md` states and the lint relies on (`tools/api_probe.py`);
 - ffmpeg and its encoders;
 - numpy and Pillow;
 - the checksums of the structures in `assets/pdb/`.
@@ -95,6 +96,8 @@ Caveats:
 | `Blender not found` | Set `BLENDER` to the executable's full path. |
 | `doctor` reports no Cycles GPU | Update the GPU driver. Cycles falls back to the CPU, which is very slow at 128 samples. |
 | A build fails | Read `renders/<shot>/build.log`. Scripts need Blender 5.2's API (see `docs/blender-5.md`). |
+| A build stops with "API errors" before Blender starts | The lint found an API that Blender 5.2 rejects. Each finding names the 5.2 form; `python pipeline.py lint <folder>` repeats the check. |
+| `doctor` reports API facts that don't hold | Your Blender is not the pinned 5.2, or a new release moved the API. Revise `docs/blender-5.md`, `tools/bpy_lint.py` and `tools/api_probe.py` together. |
 | A checksum differs after `pipeline.py pdb` | RCSB has remediated the entry. Shots were checked against the recorded file, so restore that file from git. |
 | `render` refuses to continue a take | The blend changed after the take started. Render into a new `take-NN`, or pass `--force` if only the build date changed. |
 | The MCP tools are missing in Claude Code | Open Blender first, then start a new session; servers load at session start. |

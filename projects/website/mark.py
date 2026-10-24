@@ -36,6 +36,7 @@ import molanim  # noqa: E402
 
 molanim.reload()
 from molanim.blender import scene as SC  # noqa: E402
+from molanim.blender.nodes import by_type  # noqa: E402
 
 sys.path.insert(0, str(HERE))
 import website as W  # noqa: E402  (the shared radial backdrop, so the page's CSS glow can match it)
@@ -100,9 +101,7 @@ def cube_mesh(name):
 def tone_material(tone):
     m = bpy.data.materials.new(PREFIX + tone.lstrip('#').capitalize())
     rgb = np.array(A.linear(tone)) * np.array(ALBEDO_GAIN.get(tone, (1.0, 1.0, 1.0)))
-    if m.node_tree is None:
-        m.use_nodes = True
-    p = m.node_tree.nodes['Principled BSDF']
+    p = by_type(m.node_tree, 'BSDF_PRINCIPLED')
     p.inputs['Base Color'].default_value = (*rgb, 1)
     p.inputs['Roughness'].default_value = ROUGHNESS
     p.inputs['Specular IOR Level'].default_value = 0.25

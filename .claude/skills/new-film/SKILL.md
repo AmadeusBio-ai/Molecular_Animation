@@ -22,16 +22,19 @@ Follow `docs/workflow.md`. It is the authority; the steps below are a checklist.
    - Measure every claim the film depends on, with code: put it in a pure-numpy module next to the shot, with a test.
    - Where the data and the story disagree, show the data and label the illustrative step.
 3. **Plan in the script header.** Set the timeline, camera keys, palette and label text as constants. Add what the brief needs from `molanim`: morph, pathway, membrane, particles, more structures, and thermal motion on one clock (`docs/motion.md`; the template already moves its protein). The case study shows each one.
-4. **Build.** Run `python pipeline.py build <name>`, or `runpy` through Blender MCP. Read `RESULT`, which should report the numerical checks.
+4. **Build.** Run `python pipeline.py build <name>`, or `runpy` through Blender MCP.
+   - Write `bpy` for Blender 5.2, not from memory of older versions: check `docs/blender-5.md` first.
+   - `build` lints the shot's folder before Blender starts. An error names the 5.2 form to use.
+   - Read `RESULT`, which should report the numerical checks, and the notes after it: deprecations, geometry-node warnings, lint warnings.
 5. **Look-dev.**
    - Run `python pipeline.py still <name> <frame> --percent 50` (add `--overlay` for labels) at each key frame, and read the PNGs.
-   - Fold every fix back into the script.
+   - Fold every fix back into the script, in the storyboard constants where they can express it.
 6. **Preview.** Run `python pipeline.py preview <name>` and read the contact sheet. Run `python pipeline.py motion` on the preview folder. Then check the busiest moves on consecutive frames (`preview <name> --frames A-B --step 1 --percent 50`, then `motion`): stepped previews hide frame-scale jerks. Fix timing and motion before any final render.
 7. **Final.**
    - Run `python pipeline.py render <name> --take take-NN` in the background, then `--overlay --take labels-NN`.
    - Point `shots.json` at both takes, then run `python pipeline.py deliver <name>`.
    - Decode a few delivered frames and look at them.
-8. **Record.** Complete `record.md` (model: `examples/channelrhodopsin/record.md`). Add general lessons to `docs/principles.md`, and general code to `molanim` with tests.
+8. **Record.** Complete `record.md` (model: `examples/channelrhodopsin/record.md`). Add general lessons to `docs/principles.md`, and general code to `molanim` with tests. If a Blender API surprised you, add it to `docs/blender-5.md`, `tools/api_probe.py` and `tools/bpy_lint.py` together.
 
 When a step needs hours of rendering, say so and give an estimate (about 19 s per 1080p Cycles frame at 128 samples on an RTX 5060 Ti) before starting it.
 

@@ -36,7 +36,7 @@ from molanim import color, membrane  # noqa: E402
 from molanim import structure as St  # noqa: E402
 from molanim.blender import groups, look, mesh, rig  # noqa: E402
 from molanim.blender import scene as SC  # noqa: E402
-from molanim.blender.nodes import set_modifier_inputs  # noqa: E402
+from molanim.blender.nodes import by_type, set_modifier_inputs  # noqa: E402
 
 if 'c1c2' in sys.modules:
     import importlib
@@ -112,10 +112,8 @@ def radial_world(name, centre, edge, ambient, strength, res, focus=(0.56, 0.54),
     """The camera sees a soft radial glow (`centre` colour around `focus` in window coordinates, fading to `edge`
     at distance `reach`, aspect-corrected); objects are lit by a flat `ambient` instead."""
     w = bpy.data.worlds.new(name)
-    if w.node_tree is None:
-        w.use_nodes = True
     nt = w.node_tree
-    out = nt.nodes['World Output']
+    out = by_type(nt, 'OUTPUT_WORLD')
     for n in list(nt.nodes):
         if n != out:
             nt.nodes.remove(n)

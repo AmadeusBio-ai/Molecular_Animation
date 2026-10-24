@@ -3,6 +3,7 @@
 # Claude Code notes
 
 - **Brief to film.** `/new-film <brief or source document>` runs the workflow in `docs/workflow.md` (skill in `.claude/skills/new-film/`).
+- **Blender API habits.** Claude's `bpy` reflexes predate Blender 5. Left alone, it reaches for `BLENDER_EEVEE_NEXT`, `use_nodes = True`, `nodes['Principled BSDF']`, `action.fcurves` and `scene.node_tree`. `docs/blender-5.md` has the 5.2 forms. `build` lints shot folders, but code sent straight through `execute_blender_code` is not linted, so check the table before writing it, or run `python pipeline.py lint <file>` on a helper first.
 - **Blender MCP.** Tools appear as `mcp__blender__*`.
   - Live tools need Blender open with the MCP add-on running.
   - The `*_for_cli` tools start their own background Blender.

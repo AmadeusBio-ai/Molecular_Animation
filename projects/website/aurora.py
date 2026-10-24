@@ -32,7 +32,7 @@ import gallery as G  # noqa: E402  (shots, loaders, Stage; also imports molanim 
 from molanim.color import lin  # noqa: E402
 from molanim.blender import look  # noqa: E402
 from molanim.blender import scene as SC  # noqa: E402
-from molanim.blender.nodes import new_group, set_modifier_inputs  # noqa: E402
+from molanim.blender.nodes import by_type, new_group, set_modifier_inputs  # noqa: E402
 
 W = G.W
 
@@ -127,9 +127,8 @@ def candy_material(name, rim_strength):
     """Atoms: base colour from 'col', subsurface and clear coat, emission = 'emit' (highlights) plus a Fresnel rim
     in the atom's own, lightened colour."""
     m = bpy.data.materials.new(name)
-    m.use_nodes = True
     nt = m.node_tree
-    p = nt.nodes['Principled BSDF']
+    p = by_type(nt, 'BSDF_PRINCIPLED')
     for k, v in (('Roughness', 0.32), ('Subsurface Weight', 0.45), ('Subsurface Scale', 0.6), ('Coat Weight', 0.55),
                  ('Coat Roughness', 0.08), ('Specular IOR Level', 0.55), ('Sheen Weight', 0.25), ('Sheen Roughness', 0.3)):
         p.inputs[k].default_value = v
@@ -165,9 +164,8 @@ def aura_material(name, rgb, strength, frost=0.1):
     """Envelope: a frosted, tinted glass shell. Mostly clear facing the camera, denser and glowing toward its rim
     (Fresnel), with a faint glossy sheen."""
     m = bpy.data.materials.new(name)
-    m.use_nodes = True
     nt = m.node_tree
-    out = nt.nodes['Material Output']
+    out = by_type(nt, 'OUTPUT_MATERIAL')
     for nd in list(nt.nodes):
         if nd != out:
             nt.nodes.remove(nd)
@@ -213,8 +211,7 @@ def glass_ghost(name, rgb):
     """Replaces look.ghost_material (p53's low-confidence chain, the predicted DNA): a lit, see-through tint.
     Returns (material, alpha socket) like the original."""
     m = bpy.data.materials.new(name)
-    m.use_nodes = True
-    p = m.node_tree.nodes['Principled BSDF']
+    p = by_type(m.node_tree, 'BSDF_PRINCIPLED')
     p.inputs['Base Color'].default_value = (*lin(rgb), 1)
     p.inputs['Emission Color'].default_value = (*lin(rgb), 1)
     p.inputs['Emission Strength'].default_value = 0.9
@@ -255,9 +252,8 @@ def aurora_world(name, A, res):
     """Camera rays see the wash, blobs and bokeh (window coordinates, aspect-corrected); objects are lit by a
     flat ambient colour, as in gallery.py, so the backdrop never tints the molecules' shading."""
     w = bpy.data.worlds.new(name)
-    w.use_nodes = True
     nt = w.node_tree
-    out = nt.nodes['World Output']
+    out = by_type(nt, 'OUTPUT_WORLD')
     for n in list(nt.nodes):
         if n != out:
             nt.nodes.remove(n)

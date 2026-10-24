@@ -131,6 +131,7 @@ The van der Waals envelope (`groups.envelope`) stands for the outer edge of the 
 | | `collection`, `empty`, `keys`, `set_linear`, `fcurves`, `look_at`, `sun`, `show` | Building blocks; empties double as animated controllers |
 | | `cycles_settings(scene, res, frames, fps, samples)` | Studio defaults: GPU, adaptive sampling, denoised, Standard view |
 | `nodes` | `G`, `new_group`, `set_modifier_inputs`, `add_nodes_modifier` | A compact geometry-node builder; modifier inputs by socket name (5.x API) |
+| | `by_type(tree, kind)` | A default node by type (`'BSDF_PRINCIPLED'`, `'OUTPUT_MATERIAL'`, `'OUTPUT_WORLD'`, `'BACKGROUND'`): default node names follow the UI language |
 | `groups` | `breath(prefix, ..., loop_frames)` | Coherent sway plus jitter; exactly periodic when `loop_frames` is set. Per-atom noise: kept for old scripts; new films use `dynamics` |
 | | `molecule(prefix, breath_group, ..., thermal_group, space)` | Spheres for context, ball-and-stick for roles, a camera-aimed cutaway funnel, a section slab, reveal groups, glow, optional per-residue offsets. `thermal_group` (e.g. `dynamics`) moves atoms after the cuts, so no atom flickers across a cut surface; `space='RELATIVE'` for a molecule whose object tumbles |
 | | `spheres`, `frame_spheres` | Plain or frame-indexed sphere clouds (lipids, ions); `spheres` takes a `thermal_group` too |
@@ -166,6 +167,8 @@ Choreography is plain keyframes on these channels (`scene.keys(ctl, 'location', 
 
 - `tools/render.py` runs inside Blender. It picks the GPU (OptiX first) and renders a still, a crop (`--border`) or a resumable sequence.
 - `tools/encode.py` encodes PNG sequences to H.264 MP4 and VP9 WebM, with an optional `--overlay` label pass, and verifies frame counts and durations with ffprobe.
+- `tools/bpy_lint.py` flags Blender Python written for an older Blender: errors for APIs that 5.2 rejects, warnings for deprecated or fragile ones (`use_nodes`, default nodes by name, `bpy.ops` where the data API works). It needs no Blender: `pipeline.py lint`, `pipeline.py build` (first), and the test suite.
+- `tools/api_probe.py` runs inside Blender and checks the API facts that `docs/blender-5.md` states and the lint relies on. `pipeline.py doctor` runs it.
 - `tools/mcp_smoke_test.py` is a minimal scene for checking a Blender MCP connection.
 - `tools/blender_mcp_launch.py` is the Windows stdin fix for the Blender MCP server (`docs/setup.md`).
 - `pipeline.py` discovers `examples/*/shots.json` and `projects/*/shots.json` and wraps all of the above (`docs/workflow.md`).

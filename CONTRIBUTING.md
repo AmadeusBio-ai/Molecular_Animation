@@ -26,7 +26,7 @@ For anything that touches `molanim.blender`, a shot script or the pipeline, you 
   - a test that pins its key scientific numbers.
 
   Large media go in a GitHub release (`"release"` in `shots.json`), not in git.
-- **Fixes and portability**: macOS and Linux reports, newer Blender versions (`docs/blender-5.md`), documentation.
+- **Fixes and portability**: macOS and Linux reports, newer Blender versions, documentation. For a new Blender, run `python pipeline.py doctor`: its API probe lists the facts that moved. Then revise `docs/blender-5.md`, `tools/bpy_lint.py` and `tools/api_probe.py` together.
 
 ## Rules that keep the project trustworthy
 
@@ -43,7 +43,7 @@ For anything that touches `molanim.blender`, a shot script or the pipeline, you 
 
 ## Style
 
-- Python 3.10+, numpy, standard library. Blender scripts use the data API and `bmesh` in preference to `bpy.ops`.
+- Python 3.10+, numpy, standard library. Blender scripts use the data API and `bmesh` in preference to `bpy.ops`, and pass `python pipeline.py lint` (Blender 5.2's API; `docs/blender-5.md`).
 - Match the surrounding code: concise docstrings that say why, constants at the top of shot scripts, colours as sRGB 0–255.
 - Keep functions small and named for what they do in the film (`molecule`, `tube`, `keep_clear`).
 
@@ -51,6 +51,6 @@ For anything that touches `molanim.blender`, a shot script or the pipeline, you 
 
 1. Open an issue first for anything large.
 2. Keep each PR focused, with tests (and `docs/framework.md`) updated in the same PR.
-3. CI runs `compileall`, the test suite and the structure checksums. For visual changes, attach a still or contact sheet, and the `pipeline.py check` output if the case study is affected.
+3. CI runs `compileall`, the test suite (which includes the Blender API lint) and the structure checksums. For visual changes, attach a still or contact sheet, and the `pipeline.py check` output if the case study is affected.
 
 By contributing you agree that your contributions are licensed under the Apache License 2.0 (`LICENSE`).

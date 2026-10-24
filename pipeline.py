@@ -3,12 +3,17 @@
 Projects live in examples/<name>/ and projects/<name>/; each has a shots.json describing its shots (script,
 blend, fps, frame count, delivered take, encode settings, posters). Shot names are unique across projects.
 
-    python pipeline.py doctor                         check Blender, GPU, ffmpeg, Python packages and structures
+    python pipeline.py doctor                         check Blender, GPU, the 5.2 API facts the docs rely on
+                                                      (tools/api_probe.py), ffmpeg, Python packages and structures
     python pipeline.py list                           every shot, and which of blend / takes / delivery exist
+    python pipeline.py lint [paths ...]               flag bpy code written for an older Blender (tools/bpy_lint.py;
+                                                      build runs it on the shot's folder first)
     python pipeline.py new <name> --pdb 1EMA [--highlight CRO] [--chains A] [--title T] [--seconds 8] [--fps 24] [--loop]
                                                       scaffold projects/<name>/ from templates/shot
     python pipeline.py pdb 9GO1 9GO2                  download mmCIF files from RCSB into assets/pdb (+ checksums)
-    python pipeline.py build <shot>|all               run the shot script headless, print and save its RESULT
+    python pipeline.py build <shot>|all               run the shot script headless, print and save its RESULT, then
+                                                      what a render would not show: Python deprecation warnings and
+                                                      geometry-node warnings
     python pipeline.py still <shot> <frame> [--percent 50] [--samples N] [--out PATH] [--overlay]
     python pipeline.py preview <shot> [--frames A-B] [--step 4] [--percent 25] [--samples 16]
                                                       new preview-NN + contact sheet (--frames A-B --step 1: a
@@ -28,6 +33,7 @@ GPU itself).
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import platform
@@ -115,6 +121,21 @@ def run_blender(args, log=None, env=None):
         Path(log).parent.mkdir(parents=True, exist_ok=True)
         Path(log).write_text(out, encoding='utf-8')
     return proc.returncode, out
+
+
+def bpy_lint():
+    """tools/bpy_lint.py as a module (tools/ is not a package)."""
+    spec = importlib.util.spec_from_file_location('bpy_lint', ROOT / 'tools' / 'bpy_lint.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def api_probe():
+    """Run tools/api_probe.py in Blender: {fact: True | what failed}, or None if it did not run."""
+    code, out = run_blender(['--python', str(ROOT / 'tools' / 'api_probe.py')])
+    line = next((l for l in out.splitlines() if l.startswith('API_PROBE ')), None)
+    return None if code or line is None else json.loads(line[len('API_PROBE '):])['facts']
 
 
 def render_py(blend, extra, log):
@@ -210,6 +231,12 @@ def cmd_doctor(a):
         report(exe, info['version'].startswith(BLENDER_VERSION), f"{info['version']} (want {BLENDER_VERSION}.x)")
         gpus = {k: v for k, v in info['devices'].items() if v}
         report('Cycles GPU', bool(gpus), json.dumps(gpus) if gpus else 'none found; Cycles will be very slow on CPU')
+        facts = api_probe()
+        moved = {k: v for k, v in (facts or {}).items() if v is not True}
+        report('API facts in docs/blender-5.md (tools/api_probe.py)', facts and not moved,
+               'the probe did not run' if facts is None else f'{len(facts) - len(moved)} of {len(facts)} hold')
+        for name, why in moved.items():
+            print(f'       {name}: {why}  -> revise docs/blender-5.md, tools/bpy_lint.py and this fact together')
 
     print('ffmpeg')
     for tool in ('ffmpeg', 'ffprobe'):
@@ -284,21 +311,68 @@ def cmd_pdb(a):
     fetch_pdb(a.ids)
 
 
+# Runs a shot script in Blender. Deprecation warnings are shown for imported modules (molanim) too, not only
+# __main__, and geometry-node warnings are collected after the build: neither shows in a render.
+BUILD_EXPR = """import json, os, runpy, warnings
+import bpy
+warnings.simplefilter('default', DeprecationWarning)
+r = runpy.run_path(os.environ['PIPELINE_SCRIPT'], run_name='__main__').get('RESULT')
+print('PIPELINE_RESULT ' + json.dumps(r, default=str))
+w = [[o.name, m.name, x.type, x.message] for o in bpy.data.objects for m in o.modifiers if m.type == 'NODES'
+     for x in m.node_warnings]
+print('PIPELINE_NODE_WARNINGS ' + json.dumps(w))
+"""
+
+
+def lint_shot(s):
+    """Lint the shot's folder and molanim.blender before Blender runs: an API that 5.2 rejects stops the build here,
+    in a second, with the fix, instead of deep in a Blender traceback. Returns the warnings."""
+    lint = bpy_lint()
+    found = lint.lint([s['folder'], ROOT / 'molanim' / 'blender'])
+    if any(f.level == 'error' for f in found):
+        print(lint.report(found, len(lint.files([s['folder'], ROOT / 'molanim' / 'blender']))))
+        sys.exit(f"{rel(s['script'])}: Blender {BLENDER_VERSION} API errors (docs/blender-5.md). Fix them, or mark a "
+                 'line that is right anyway with `# bpy-lint: ignore`.')
+    return found
+
+
+def build_notes(out, warned):
+    """What the build log says that a render would not show: another Blender than the pinned one, Python
+    deprecation warnings, geometry-node warnings, lint warnings."""
+    notes = []
+    m = re.search(r'^Blender (\d+\.\d+\S*(?: LTS)?) \(hash', out, re.M)
+    if m and not m.group(1).startswith(BLENDER_VERSION):
+        notes.append(f'Blender {m.group(1)} ran this build; the scripts and docs/blender-5.md target {BLENDER_VERSION}.x')
+    for d in dict.fromkeys(l.strip() for l in out.splitlines() if ': DeprecationWarning: ' in l):
+        where, _, msg = d.partition(': DeprecationWarning: ')
+        notes.append(f'deprecated: {rel(where.rsplit(":", 1)[0])}:{where.rsplit(":", 1)[-1]}: {msg}')
+    line = next((l for l in out.splitlines() if l.startswith('PIPELINE_NODE_WARNINGS ')), None)
+    for obj, mod, kind, msg in json.loads(line[len('PIPELINE_NODE_WARNINGS '):]) if line else []:
+        notes.append(f'geometry nodes {kind.lower()}: {obj} / {mod}: {msg}')
+    notes += [f'lint {f.level}: {rel(f.path)}:{f.line} [{f.rule}] (python pipeline.py lint)' for f in warned]
+    return notes
+
+
+def print_notes(name, notes):
+    print(f'{name}: nothing a render would hide (no deprecations, node or lint warnings)' if not notes else
+          f"{name}: {len(notes)} thing{'s' * (len(notes) != 1)} a render would not show:\n"
+          + '\n'.join('  ' + n for n in notes))
+
+
 def build(name):
+    """Lint, run the shot script headless, save RESULT. Returns (RESULT, seconds, notes)."""
     s = shot(name)
+    warned = lint_shot(s)
     log = ROOT / 'renders' / name / 'build.log'
-    expr = ("import json, os, runpy\n"
-            "r = runpy.run_path(os.environ['PIPELINE_SCRIPT'], run_name='__main__').get('RESULT')\n"
-            "print('PIPELINE_RESULT ' + json.dumps(r, default=str))")
     t0 = time.time()
-    code, out = run_blender(['--python-expr', expr], log, env={'PIPELINE_SCRIPT': str(s['script'])})
+    code, out = run_blender(['--python-expr', BUILD_EXPR], log, env={'PIPELINE_SCRIPT': str(s['script'])})
     line = next((l for l in out.splitlines() if l.startswith('PIPELINE_RESULT ')), None)
     if code or line is None:
         print(out[-4000:])
         sys.exit(f'build of {name} failed; log: {rel(log)}')
     result = json.loads(line[len('PIPELINE_RESULT '):])
     (log.parent / 'build-result.json').write_text(json.dumps(result, indent=2), encoding='utf-8')
-    return result, time.time() - t0
+    return result, time.time() - t0, build_notes(out, warned)
 
 
 def cmd_build(a):
@@ -309,10 +383,18 @@ def cmd_build(a):
         if script in done:          # one script may write several blends
             continue
         done.add(script)
-        result, seconds = build(name)
+        result, seconds, notes = build(name)
         text = json.dumps(result, indent=2)
         print(f'== {name}: {rel(script)} built in {seconds:.0f} s; RESULT saved to renders/{name}/build-result.json')
         print(text if len(text) < 4000 else text[:4000] + '\n  ... (truncated)')
+        print_notes(name, notes)
+
+
+def cmd_lint(a):
+    lint = bpy_lint()
+    found = lint.lint(a.paths or None)
+    print(lint.report(found, len(lint.files(a.paths or None))))
+    return 1 if any(f.level == 'error' for f in found) else 0
 
 
 def cmd_still(a):
@@ -473,7 +555,7 @@ def cmd_smoke(a):
         s = shot(name)
         t0 = time.time()
         if s['script'] not in built:
-            build(name)
+            print_notes(name, build(name)[2])
             built.add(s['script'])
         tb = time.time() - t0
         frame = next(iter(s['posters'].values())) if s.get('posters') else max(1, s['count'] // 2)
@@ -503,7 +585,7 @@ def cmd_check(a):
         if not ref.exists():
             sys.exit(f'{rel(ref)} missing: python pipeline.py fetch {name}')
         if not a.no_build and s['script'] not in built:
-            build(name)
+            print_notes(name, build(name)[2])
             built.add(s['script'])
         out = out_dir / f'{name}-f{frame:04d}.png'
         t0 = time.time()
@@ -531,6 +613,8 @@ def main():
     sub = p.add_subparsers(dest='cmd', required=True)
     sub.add_parser('doctor')
     sub.add_parser('list')
+    q = sub.add_parser('lint')
+    q.add_argument('paths', nargs='*', help='files or folders (default: molanim, tools, templates, examples, projects)')
     q = sub.add_parser('new')
     q.add_argument('name')
     q.add_argument('--pdb', required=True, help='PDB ID of the main structure')

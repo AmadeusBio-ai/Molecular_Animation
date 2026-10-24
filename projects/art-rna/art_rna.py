@@ -47,7 +47,7 @@ from molanim import structure as St  # noqa: E402
 from molanim import timeline as TL  # noqa: E402
 from molanim.blender import groups, labels, look, mesh, rig  # noqa: E402
 from molanim.blender import scene as SC  # noqa: E402
-from molanim.blender.nodes import new_group, set_modifier_inputs  # noqa: E402
+from molanim.blender.nodes import by_type, new_group, set_modifier_inputs  # noqa: E402
 
 if 'art_locus' in sys.modules:
     import importlib
@@ -230,10 +230,8 @@ def ghost_attr_material(name, emission=0.22, roughness=0.36):
     """Translucent atoms: colour from 'col', alpha from 'alpha', a soft self-glow so they read on the pale
     backdrop. Low-confidence predictions are drawn with it."""
     m = bpy.data.materials.new(name)
-    if m.node_tree is None:
-        m.use_nodes = True
     nt = m.node_tree
-    p = nt.nodes['Principled BSDF']
+    p = by_type(nt, 'BSDF_PRINCIPLED')
     p.inputs['Roughness'].default_value = roughness
     p.inputs['Emission Strength'].default_value = emission
     col = nt.nodes.new('ShaderNodeAttribute')
@@ -320,10 +318,8 @@ def near(P, Q, reach):
 
 def fade_material(name, rgb, f0, f1, fade=8):
     m = bpy.data.materials.new(name)
-    if m.node_tree is None:
-        m.use_nodes = True
     nt = m.node_tree
-    out = nt.nodes['Material Output']
+    out = by_type(nt, 'OUTPUT_MATERIAL')
     for nd in list(nt.nodes):
         if nd != out:
             nt.nodes.remove(nd)

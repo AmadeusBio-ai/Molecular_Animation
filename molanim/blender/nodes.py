@@ -1,5 +1,11 @@
-"""A small geometry-node builder, and modifier inputs by socket name (Blender 5.x)."""
+"""A small geometry-node builder, modifier inputs by socket name, default nodes by type (Blender 5.x)."""
 import bpy
+
+
+def by_type(tree, kind):
+    """The first node of type `kind` ('BSDF_PRINCIPLED', 'OUTPUT_MATERIAL', 'OUTPUT_WORLD', 'BACKGROUND'). Default node
+    names follow the UI language when Blender translates new data names (its default), so never look them up by name."""
+    return next(n for n in tree.nodes if n.type == kind)
 
 
 class G:

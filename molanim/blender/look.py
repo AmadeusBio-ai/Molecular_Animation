@@ -1,13 +1,11 @@
-"""Materials, the studio world and bloom (Blender 5.x). Colours are sRGB 0-255."""
+"""Materials, the studio world and bloom (Blender 5.x). Colours are sRGB 0-255.
+
+New materials and worlds come with node trees in 5.x (Principled BSDF + Material Output, Background + World Output),
+so nothing here sets the deprecated `use_nodes`; default nodes are found by type (nodes.by_type)."""
 import bpy
 
 from ..color import lin
-
-
-def _nodes(m):
-    if m.node_tree is None:
-        m.use_nodes = True
-    return m.node_tree
+from .nodes import by_type
 
 
 def _alpha(m, attribute):
@@ -17,7 +15,7 @@ def _alpha(m, attribute):
     a = nt.nodes.new('ShaderNodeAttribute')
     a.attribute_type, a.attribute_name = 'GEOMETRY', attribute
     a.location = (-700, -500)
-    nt.links.new(a.outputs['Fac'], nt.nodes['Principled BSDF'].inputs['Alpha'])
+    nt.links.new(a.outputs['Fac'], by_type(nt, 'BSDF_PRINCIPLED').inputs['Alpha'])
     m.surface_render_method = 'DITHERED'
 
 
@@ -25,8 +23,8 @@ def attr_material(name, roughness=0.45, specular=0.4, sheen=0.0, emission_tint=0
     """Base colour from the 'col' attribute; emission strength from 'emit' (colour tinted toward warm white).
     Pairs with groups.molecule(), which stores both per atom. `alpha` names an opacity attribute (optional)."""
     m = bpy.data.materials.new(name)
-    nt = _nodes(m)
-    p = nt.nodes['Principled BSDF']
+    nt = m.node_tree
+    p = by_type(nt, 'BSDF_PRINCIPLED')
     p.inputs['Roughness'].default_value = roughness
     p.inputs['Specular IOR Level'].default_value = specular
     p.inputs['Sheen Weight'].default_value = sheen
@@ -51,7 +49,7 @@ def attr_material(name, roughness=0.45, specular=0.4, sheen=0.0, emission_tint=0
 
 def flat_material(name, rgb, emission=0.0, roughness=0.4):
     m = bpy.data.materials.new(name)
-    p = _nodes(m).nodes['Principled BSDF']
+    p = by_type(m.node_tree, 'BSDF_PRINCIPLED')
     p.inputs['Base Color'].default_value = (*lin(rgb), 1)
     p.inputs['Roughness'].default_value = roughness
     p.inputs['Emission Color'].default_value = (*lin(rgb), 1)
@@ -63,8 +61,8 @@ def glow_material(name, rgb, strength, rim=False):
     """Pure emission; with `rim`, emission grows toward grazing angles and the centre is see-through
     (a cavity or envelope that reads as a volume without hiding what is inside). Returns (material, emission node)."""
     m = bpy.data.materials.new(name)
-    nt = _nodes(m)
-    out = nt.nodes['Material Output']
+    nt = m.node_tree
+    out = by_type(nt, 'OUTPUT_MATERIAL')
     for nd in list(nt.nodes):
         if nd != out:
             nt.nodes.remove(nd)
@@ -91,15 +89,15 @@ def ghost_material(name, rgb):
     """Translucent pale material for comparison ghosts (e.g. a previous state); returns (material, alpha socket)
     so the alpha can be keyframed."""
     m = flat_material(name, rgb, emission=0.6, roughness=0.3)
-    return m, m.node_tree.nodes['Principled BSDF'].inputs['Alpha']
+    return m, by_type(m.node_tree, 'BSDF_PRINCIPLED').inputs['Alpha']
 
 
 def gradient_world(name, top, bottom, ambient, ambient_strength):
     """The camera sees a soft vertical gradient (screen space, bottom -> top); objects are lit by a flat
     `ambient` colour instead. Returns (world, bottom colour socket, top colour socket) for keyframing."""
     w = bpy.data.worlds.new(name)
-    nt = _nodes(w)
-    out = nt.nodes['World Output']
+    nt = w.node_tree
+    out = by_type(nt, 'OUTPUT_WORLD')
     for n in list(nt.nodes):
         if n != out:
             nt.nodes.remove(n)
@@ -152,8 +150,8 @@ def ribbon_material(name, roughness=0.38, coat=0.35, subsurface=0.08, alpha=None
     """Cartoons and ladders: base colour from the 'col' point attribute; a satin plastic with a light clear coat,
     so folds read by their shading rather than by outlines. `alpha` names an opacity attribute (optional)."""
     m = bpy.data.materials.new(name)
-    nt = _nodes(m)
-    p = nt.nodes['Principled BSDF']
+    nt = m.node_tree
+    p = by_type(nt, 'BSDF_PRINCIPLED')
     for k, v in (('Roughness', roughness), ('Coat Weight', coat), ('Coat Roughness', 0.15),
                  ('Subsurface Weight', subsurface), ('Specular IOR Level', 0.45)):
         p.inputs[k].default_value = v
@@ -171,9 +169,9 @@ def skin_material(name, opacity=0.18, edge=0.6, rgb=None):
     electrostatic potential) or a fixed sRGB `rgb`; `opacity` where the skin faces the camera, rising to `edge`
     at its silhouette, so the shape reads on white without hiding what is inside. No emission: it does not glow."""
     m = bpy.data.materials.new(name)
-    nt = _nodes(m)
-    out = nt.nodes['Material Output']
-    p = nt.nodes['Principled BSDF']
+    nt = m.node_tree
+    out = by_type(nt, 'OUTPUT_MATERIAL')
+    p = by_type(nt, 'BSDF_PRINCIPLED')
     p.inputs['Roughness'].default_value = 0.45
     p.inputs['Specular IOR Level'].default_value = 0.3
     if rgb is None:
@@ -201,7 +199,7 @@ def fluorescence_material(name, rgb, strength, opacity=0.5):
     """A translucent skin that emits light of its own colour: only for something that really fluoresces (the GFP
     chromophore emits green light). Returns (material, emission strength socket)."""
     m = skin_material(name, opacity=opacity, edge=min(1.0, opacity + 0.3), rgb=rgb)
-    p = m.node_tree.nodes['Principled BSDF']
+    p = by_type(m.node_tree, 'BSDF_PRINCIPLED')
     p.inputs['Emission Color'].default_value = (*lin(rgb), 1)
     p.inputs['Emission Strength'].default_value = strength
     return m, p.inputs['Emission Strength']

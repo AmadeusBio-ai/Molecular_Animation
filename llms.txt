@@ -3,7 +3,7 @@
 > Open-source Python framework and Blender 5.2 pipeline that turns a scientific brief and PDB/mmCIF or AlphaFold structures into honest, beautiful molecular animation of proteins, nucleic acids and ligands: scripted scenes, rendered takes, labelled and clean MP4/WebM films with posters, and a production record that tags every beat as experimental, simulation-derived or illustrative. It can be driven by an AI agent (Claude Code through Blender MCP) or by hand.
 
 - Code: https://github.com/AmadeusBio-ai/Molecular_Animation (Apache-2.0). Films: the GitHub releases.
-- The Python package is `molanim`: a pure-numpy science layer (mmCIF and assemblies, atom-matched states, constrained morphs, pathway profiles, membranes, ion transits, thermal motion, cartoons, electrostatics) and a Blender layer (`molanim.blender`). The command line is `pipeline.py`: new, pdb, build, still, preview, render, deliver, motion, check.
+- The Python package is `molanim`: a pure-numpy science layer (mmCIF and assemblies, atom-matched states, constrained morphs, pathway profiles, membranes, ion transits, thermal motion, cartoons, electrostatics) and a Blender layer (`molanim.blender`). The command line is `pipeline.py`: new, pdb, build, still, preview, render, deliver, motion, check, lint.
 - Motion is modelled, not simulated: tumbling and diffusion at hydrodynamic rates, elastic-network normal modes and side-chain turns at literature rates. It is not molecular dynamics.
 - Requirements: Blender 5.2, a Cycles-capable GPU, ffmpeg, Python 3.10+. Tested on Windows 11.
 
@@ -16,7 +16,7 @@
 - [Motion](https://raw.githubusercontent.com/AmadeusBio-ai/Molecular_Animation/main/docs/motion.md): how molecules move, with rates and sources
 - [Depiction sources](https://raw.githubusercontent.com/AmadeusBio-ai/Molecular_Animation/main/docs/depiction-sources.md): the physics behind cartoons, Coulombic colouring and pi lobes
 - [Setup](https://raw.githubusercontent.com/AmadeusBio-ai/Molecular_Animation/main/docs/setup.md): Blender, GPU, ffmpeg and Blender MCP
-- [Blender 5.x notes](https://raw.githubusercontent.com/AmadeusBio-ai/Molecular_Animation/main/docs/blender-5.md): Python API changes that bite
+- [Blender 5.x notes](https://raw.githubusercontent.com/AmadeusBio-ai/Molecular_Animation/main/docs/blender-5.md): the Blender 5.2 Python API, what coding models trained on older Blender write instead, and how the repo checks it (an API probe and a lint)
 - [Agent guide](https://raw.githubusercontent.com/AmadeusBio-ai/Molecular_Animation/main/AGENTS.md): operating rules for coding agents working in the repo
 
 ## Examples

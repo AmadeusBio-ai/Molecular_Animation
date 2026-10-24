@@ -7,6 +7,7 @@ Read before starting a film:
 - `docs/principles.md`: what makes these films good and honest.
 - `docs/framework.md`: the `molanim` API and the pipeline tools.
 - `docs/motion.md`: how molecules move, with rates and sources, and how the films show it.
+- `docs/blender-5.md`: the Blender 5.2 API, and what models trained on older Blender write instead.
 - `examples/channelrhodopsin/`: the worked case study, from brief to delivered film.
 
 Setup is in `docs/setup.md`.
@@ -39,7 +40,7 @@ Setup is in `docs/setup.md`.
    - MP4, WebM and poster PNGs.
    - A labelled and a clean version of science films.
 3. Fetch any further structures with `python pipeline.py pdb <IDs>`. Inspect their chains, alt-locs, assemblies and ligands, and verify the facts you will animate.
-4. Make the script yours, using `molanim` and the case study as needed. Then run `python pipeline.py build <name>` and read `RESULT`.
+4. Make the script yours, using `molanim` and the case study as needed. Then run `python pipeline.py build <name>`, and read `RESULT` and the notes printed after it.
 5. Do look-dev on stills (`pipeline.py still`) and view them. Then render a preview (`pipeline.py preview`) and review its contact sheet and `pipeline.py motion`, and check the busiest moves on consecutive frames (`preview --frames A-B --step 1`).
 6. Render the final take and the label pass (`pipeline.py render`), then run `pipeline.py deliver <name>`.
 7. Complete `record.md`: the status, numbers, evidence per beat, checks with their method, and known limits.
@@ -53,8 +54,8 @@ Setup is in `docs/setup.md`.
 | `projects/<name>/` | Your films, scaffolded by `pipeline.py new` |
 | `templates/shot/` | The scaffold copied by `pipeline.py new` |
 | `assets/pdb/` | mmCIF structures from RCSB, with `SHA256SUMS` (shared by all projects) |
-| `tools/` | `render.py` (inside Blender), `encode.py`, the MCP smoke test, the Windows MCP launcher |
-| `tests/` | pytest suite for the pure layer and the case-study science; runs in CI without Blender |
+| `tools/` | `render.py` (inside Blender), `encode.py`, `bpy_lint.py` (stale Blender APIs, no Blender needed), `api_probe.py` (the 5.2 API facts, inside Blender), the MCP smoke test, the Windows MCP launcher |
+| `tests/` | pytest suite for the pure layer, the case-study science and the lint; runs in CI without Blender |
 | `references/` | Local reference media (git-ignored) |
 | `renders/<shot>/` | `dev/` stills, `preview-NN/`, `take-NN/`, `labels-NN/` (git-ignored) |
 | `delivery/<shot>/` | Encoded films and posters (git-ignored; the case study's are in the GitHub release) |
@@ -65,7 +66,8 @@ Setup is in `docs/setup.md`.
 
 | Step | Command |
 | --- | --- |
-| Check the machine | `python pipeline.py doctor` |
+| Check the machine | `python pipeline.py doctor` (includes the Blender 5.2 API facts that `docs/blender-5.md` relies on) |
+| Lint Blender code | `python pipeline.py lint [paths]` (`build` runs it on the shot's folder first) |
 | Start a project | `python pipeline.py new <name> --pdb <ID>` |
 | Fetch structures | `python pipeline.py pdb <IDs>` |
 | Build a scene headless | `python pipeline.py build <shot>` (RESULT saved to `renders/<shot>/build-result.json`) |
@@ -83,15 +85,30 @@ Start a new take whenever the scene, assets or render settings change, and never
 The template (`templates/shot/shot.py`) follows all of these.
 
 - Find the repo root from `__file__` (`HERE.parents[1]` for a project folder), put it on `sys.path`, and call `molanim.reload()` before importing. Never hard-code an absolute path.
-- Scripts are idempotent. Each one rebuilds one named scene with a datablock name prefix, through `molanim.blender.scene.reset_scene`. Never purge orphans file-wide: the open file may hold the user's work.
+- Scripts are idempotent. Each one rebuilds one named scene with a datablock name prefix, through `molanim.blender.scene.reset_scene`. Never purge orphans file-wide or reset the file (`read_factory_settings`, `read_homefile`): the open file may hold the user's work.
 - Save only the target scene (`scene.save_scene`).
 - Prefer the data API and `bmesh` to `bpy.ops`. Scripts run from the MCP add-on's timer, where `context.window` may be missing.
-- Put the storyboard (timeline, camera keys, palette in sRGB 0-255, label text) as constants at the top.
+- Put the storyboard (timeline, camera keys, palette in sRGB 0-255, label text) as constants at the top. When a still shows a problem, fix it in the constants first; change the code's structure only when the constants can't express the fix.
 - Put project science in pure numpy with a test.
 - End with a JSON-serialisable `RESULT` dict that summarises what was built and the numerical checks.
 - Edit the script and rebuild. Ad-hoc code is fine for inspection and experiments, but fold anything worth keeping back into the script.
 
-## Blender MCP and Blender 5.x
+## Blender 5.2 and your habits
+
+Your `bpy` knowledge comes mostly from 2.8–4.x code, and Blender 5 moved much of the API. Stale names come out with confidence, and a render rarely shows which one broke. This repo pins Blender 5.2 (5.2.2 LTS, Python 3.13).
+
+- **Check before you write an API from memory.** `docs/blender-5.md` lists what models write and what works in 5.2, and `tools/api_probe.py` checks every row inside Blender (`pipeline.py doctor`). Then check the bundled docs (`search_api_docs`, `get_python_api_docs`), then `dir()`. The ones that bite most often:
+  - F-curves live in channelbags.
+  - EEVEE's engine id is `BLENDER_EEVEE`.
+  - Modifier inputs are set through `mod.properties.inputs`.
+  - The compositor is a node group. New materials and worlds already have node trees: don't set `use_nodes`.
+  - Principled inputs are `Specular IOR Level`, `Coat Weight`, `Emission Color` and so on.
+  - Find default nodes by type (`molanim.blender.nodes.by_type`), not by name: names follow the UI language.
+- **The lint runs first.** `pipeline.py build` lints the shot's folder (`pipeline.py lint`). An error is an API that 5.2 rejects, and it stops the build before Blender starts. A warning is deprecated or fragile code. Fix the code; use `# bpy-lint: ignore` only for a line that is right anyway.
+- **Measure, then look.** After `RESULT`, `build` prints what a render would not show: deprecation warnings, geometry-node warnings and lint warnings. Read them before rendering stills.
+- **Close the loop.** When an API surprises you, add a row to `docs/blender-5.md`, a fact to `tools/api_probe.py` and a rule to `tools/bpy_lint.py`, in the same change.
+
+## Blender MCP
 
 - Run a script in the open Blender with `execute_blender_code`:
   ```python
@@ -99,11 +116,6 @@ The template (`templates/shot/shot.py`) follows all of these.
   result = runpy.run_path(r'<repo>/projects/<name>/<script>.py', run_name='__main__')['RESULT']
   ```
 - Live MCP calls block Blender's UI and time out after 300 s. Render headless (`pipeline.py`, which uses `--factory-startup` and selects the GPU itself).
-- Before trusting an API, check it against the bundled 5.x docs (`search_api_docs`, `get_python_api_docs`). Known differences are listed in `docs/blender-5.md`. The ones that bite most often:
-  - F-curves live in channelbags.
-  - EEVEE's engine id is `BLENDER_EEVEE`.
-  - Modifier inputs are set through `mod.properties.inputs`.
-  - The compositor is a node group.
 - Review visually as well as numerically:
   - Render stills and look at them.
   - Use `get_screenshot_of_window_as_image` for the viewport.

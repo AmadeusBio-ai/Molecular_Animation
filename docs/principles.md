@@ -167,3 +167,4 @@ This is the default look of `templates/shot/` and the case study. A brief that a
 - Put the plan (timeline, camera, palette, labels) in constants at the top of the script, so the script itself is the storyboard.
 - Keep science in pure numpy where it can be tested, and keep Blender code thin around it.
 - `RESULT` reports the checks on every build, so a regression shows up at build time, not after a four-hour render.
+- Write for the pinned Blender, not for the one the model remembers. A stale API name runs fine on paper and fails in Blender, or is deprecated and works until the next release; a render seldom shows which. The lint (`pipeline.py lint`) catches the known ones before Blender starts, and the API probe (`pipeline.py doctor`) shows when an upgrade moves them (`docs/blender-5.md`).

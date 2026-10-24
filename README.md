@@ -84,8 +84,8 @@ examples/             finished case studies (channelrhodopsin)
 projects/             films made with it (ART, website plates) and yours (scaffolded by `pipeline.py new`)
 templates/shot/       the project scaffold
 assets/pdb/           structures from RCSB + SHA256SUMS
-tools/                render.py (inside Blender), encode.py, MCP smoke test, Windows MCP launcher
-tests/                pytest suite (runs in CI without Blender)
+tools/                render.py (inside Blender), encode.py, bpy_lint.py, api_probe.py, MCP smoke test, Windows MCP launcher
+tests/                pytest suite, including the lint (runs in CI without Blender)
 docs/                 workflow, principles, motion schematic, framework API, setup, Blender 5 notes
 AGENTS.md, CLAUDE.md  agent guide; .claude/skills/new-film is the /new-film skill
 ```
@@ -96,6 +96,7 @@ AGENTS.md, CLAUDE.md  agent guide; .claude/skills/new-film is the /new-film skil
 
 - **Scripts are the source.** Builds are idempotent and report their numerical checks in `RESULT`. For the case study these are the retinal dihedral path, the salt-bridge distance, the worst morph bond deviation, the pathway profile, the ion clearance against the moving protein and the motion statistics.
 - **Pinned inputs.** Structures are committed with checksums. Blender 5.2 is pinned. Every Blender call uses `--factory-startup`, and the GPU is selected explicitly.
+- **Pinned API.** Coding agents learned Blender's Python API mostly from older versions, so they write names that Blender 5 removed. `pipeline.py build` lints every shot for those before Blender starts. `pipeline.py doctor` checks, inside Blender, the 30 API facts that the lint and [docs/blender-5.md](docs/blender-5.md) rely on, so an upgrade shows exactly what moved.
 - **Verified output.** `pipeline.py check` rebuilds a shot and compares a freshly rendered poster frame with the delivered one. After the case study was refactored onto `molanim`, its posters matched within 1/255 and its label frames were pixel-identical; version 3's poster still matches within 1/255 after the template's motion was generalised.
 
 ## How it relates to Molecular Nodes, PyMOL, ChimeraX and VMD
